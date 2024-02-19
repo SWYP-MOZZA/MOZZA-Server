@@ -17,20 +17,15 @@ public class UserOAuth {
     private Long id;
 
     @OneToOne
-//    @JoinColumn(name = "oauth_user_id")
     private User user;
 
     @Column
     private String providerUserId;
 
-    @Column
-    private String accessToken;
 
     @Column
     private String refreshToken;
 
-    @Column
-    private LocalDateTime accessTokenExpires;
 
     @Column
     private LocalDateTime refreshTokenExpires;

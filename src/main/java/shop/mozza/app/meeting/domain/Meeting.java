@@ -49,4 +49,7 @@ public class Meeting {
     @Column
     private String availableUser;
 
+    @Column
+    private Boolean ableKaKaoNotification;
+
 }

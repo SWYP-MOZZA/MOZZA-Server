@@ -25,5 +25,5 @@ public class User {
     private LocalDateTime createdAt;
 
     @Column
-    private Boolean isMemeber;
+    private Boolean isMember;
 }
