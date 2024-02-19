@@ -17,6 +17,13 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql database: 'mozza'
+          mysql root user: ${{ secrets.MYSQL_USER }}
+          mysql root password: ${{ secrets.MYSQL_PASSWORD }}
           
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@ccb4328a959376b642e027874838f60f8e596de3
