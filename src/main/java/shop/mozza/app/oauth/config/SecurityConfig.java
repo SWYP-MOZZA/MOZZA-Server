@@ -7,9 +7,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+
+
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import shop.mozza.app.oauth.service.OAuth2SuccessHandler;
 import shop.mozza.app.oauth.service.OAuth2UserService;
 
 import java.io.PrintWriter;
@@ -20,8 +23,8 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final OAuth2UserService oAuth2UserService;
-    private final ObjectMapper objectMapper;
 
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -29,9 +32,13 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .anyRequest().permitAll()
                 .and()
+                .logout((logoutConfig) ->
+                        logoutConfig.logoutUrl("/")
+                )
+
                 .oauth2Login(oauth2Configurer -> oauth2Configurer
                         .loginPage("/login")
-                        .successHandler(successHandler())
+                        .successHandler(oAuth2SuccessHandler)
                         .userInfoEndpoint(userinfoEndpoint -> userinfoEndpoint
                                 .userService(oAuth2UserService)));
 
@@ -39,17 +46,4 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public AuthenticationSuccessHandler successHandler() {
-        return ((request, response, authentication) -> {
-            DefaultOAuth2User defaultOAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
-
-            response.setContentType("text/html; charset=utf-8");
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            objectMapper.writeValue(response.getWriter(), defaultOAuth2User);
-
-
-
-        });
-    }
 }
