@@ -19,10 +19,10 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
         use_sql_comments: false
         hbm2ddl:
           auto: update
         default_batch_fetch_size: 1000
+    open-in-view: false
 logging.level:
   org.hibernate.SQL: debug
