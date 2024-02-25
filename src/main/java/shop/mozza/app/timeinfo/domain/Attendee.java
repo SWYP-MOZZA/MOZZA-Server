@@ -2,19 +2,23 @@ package shop.mozza.app.timeinfo.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import shop.mozza.app.user.domain.User;
 
 @Entity
 @Builder
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TimeTable {
+public class Attendee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne(fetch = FetchType.LAZY)
-    private DateInfo dateInfo;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    private DateTimeInfo dateTimeInfoId;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    private User userId;
 
 }

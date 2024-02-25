@@ -2,11 +2,9 @@ package shop.mozza.app.meeting.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import shop.mozza.app.user.domain.User;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
 
 @Entity
 @Builder
@@ -20,36 +18,21 @@ public class Meeting {
     private Long id;
 
     @Column(nullable = false)
-    private Boolean isConfirmed;
-
-    @Column(nullable = false)
     private Boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private User creatorId;
-
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private List<User> member;
-
-    @Column
-    private LocalTime confirmedTime;
-
-    @Column
-    private LocalDate confirmedDate;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private TimeBlock timeblock;
+    private User creator;
 
     @Column
     private String URL;
 
+    //모임의 확정된 날짜/시간으로, null일 경우 not confirmed 모임이다.
     @Column
-    private Long submitUserNumber;
+    private LocalDateTime meetingTime;
 
+    // 원하는 인원만큼 가능한 모임 시간을 제출하면 알림을 보내준다. null일 경우 알림을 보내지 않는다.
     @Column
-    private String availableUser;
+    private Integer notification;
 
-    @Column
-    private Boolean ableKaKaoNotification;
 
 }

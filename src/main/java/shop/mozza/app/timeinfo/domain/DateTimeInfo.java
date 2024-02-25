@@ -3,7 +3,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.*;
+import shop.mozza.app.meeting.domain.Meeting;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 
@@ -12,21 +14,16 @@ import java.time.LocalTime;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TimeInfo {
+public class DateTimeInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
-    private LocalTime time;
+    private LocalDateTime datetime;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private TimeInfoParticipantName timeInfoParticipantNames;
+    private Meeting meetingId;
 
-    @Column
-    private Long creatorId;
-
-    @Column
-    private String participants;
 }
