@@ -1,4 +1,4 @@
-package shop.mozza.app.user.domain;
+package shop.mozza.app.login.user.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -28,10 +28,14 @@ public class User {
     @Column
     private Boolean isMember;
 
+    @Column
+    private String role;
+
     @Builder
-    public User(String name, Boolean isMember) {
+    public User(String name, Boolean isMember, String role) {
         this.name = name;
         this.isMember = isMember;
+        this.role = role;
     }
 
 

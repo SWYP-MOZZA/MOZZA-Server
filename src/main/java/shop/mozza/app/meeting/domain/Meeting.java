@@ -3,7 +3,7 @@ package shop.mozza.app.meeting.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import shop.mozza.app.user.domain.User;
+import shop.mozza.app.login.user.domain.User;
 
 
 @Entity

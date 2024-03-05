@@ -2,7 +2,7 @@ package shop.mozza.app.timeinfo.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import shop.mozza.app.user.domain.User;
+import shop.mozza.app.login.user.domain.User;
 
 @Entity
 @Builder

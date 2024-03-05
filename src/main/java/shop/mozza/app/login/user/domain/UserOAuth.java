@@ -1,4 +1,4 @@
-package shop.mozza.app.user.domain;
+package shop.mozza.app.login.user.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
