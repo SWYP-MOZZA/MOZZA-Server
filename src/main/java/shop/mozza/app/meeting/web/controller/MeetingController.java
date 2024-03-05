@@ -23,7 +23,7 @@ public class MeetingController extends BaseController {
     @Autowired
     private MeetingService meetingService;
 
-    @PostMapping("/create-meeting")
+    @PostMapping("/meeting/create")
     public ResponseEntity<?> createMeeting(@RequestBody MeetingRequestDto.makeMeetingRequest meetingRequest) {
         try {
             meetingService.createMeeting(meetingRequest);
