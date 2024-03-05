@@ -1,4 +1,4 @@
-package shop.mozza.app.oauth.service;
+package shop.mozza.app.login.oauth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
