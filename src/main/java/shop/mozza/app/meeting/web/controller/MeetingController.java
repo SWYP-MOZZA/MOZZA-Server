@@ -3,7 +3,6 @@ package shop.mozza.app.meeting.web.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +36,24 @@ public class MeetingController extends BaseController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("statusCode", 400);
             errorResponse.put("ResponseMessage", ResponseMessage.MAKE_MEETING_FAILED);
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @PostMapping("/guest")
+    public ResponseEntity<?> addGuest(@RequestBody MeetingRequestDto.guestRequest guestRequest){
+        try{
+            meetingService.addGuest(guestRequest);
+            Map<String, Object> response = new HashMap<>();
+            response.put("statusCode", 200);
+            response.put("message", ResponseMessage.GUEST_LOGIN_SUCCESS);
+            response.put("accessToken", "bearer+"); // user 완성되면 수정
+            return ResponseEntity.ok(response);
+
+        }catch (Exception e){
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("statusCode", 400);
+            errorResponse.put("ResponseMessage", ResponseMessage.GUEST_LOGIN_FAILED);
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

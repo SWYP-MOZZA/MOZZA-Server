@@ -18,14 +18,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
+
+    @Column
+    private String password;
 
     @Column
     @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column
+    @Column(nullable = false)
     private Boolean isMember;
 
     @Builder
