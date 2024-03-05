@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
@@ -26,4 +27,12 @@ public class User {
 
     @Column
     private Boolean isMember;
+
+    @Builder
+    public User(String name, Boolean isMember) {
+        this.name = name;
+        this.isMember = isMember;
+    }
+
+
 }

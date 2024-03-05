@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserOAuth {
@@ -20,16 +21,12 @@ public class UserOAuth {
     private User user;
 
     @Column
-    private String providerUserId;
-
-
-    @Column
     private String refreshToken;
-
 
     @Column
     private LocalDateTime refreshTokenExpires;
 
-
-
+    public UserOAuth(User user, String providerUserId) {
+        this.user = user;
+    }
 }
