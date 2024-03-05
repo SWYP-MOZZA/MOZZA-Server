@@ -9,7 +9,6 @@ import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
-import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

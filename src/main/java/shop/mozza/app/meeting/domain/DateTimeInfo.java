@@ -3,10 +3,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.*;
-import shop.mozza.app.meeting.domain.Meeting;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 
 
 @Entity

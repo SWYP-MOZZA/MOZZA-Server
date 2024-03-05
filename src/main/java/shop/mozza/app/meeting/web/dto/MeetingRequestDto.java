@@ -1,8 +1,6 @@
 package shop.mozza.app.meeting.web.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
