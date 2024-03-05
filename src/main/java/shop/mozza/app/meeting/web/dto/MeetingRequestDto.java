@@ -17,4 +17,11 @@ public class MeetingRequestDto {
         private Boolean onlyDate;
 
     }
+
+    @Getter
+    @Setter
+    public static class guestRequest {
+        private String name;
+        private String password;
+    }
 }

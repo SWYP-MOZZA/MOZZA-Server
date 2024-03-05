@@ -9,6 +9,8 @@ import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
+import shop.mozza.app.user.domain.User;
+import shop.mozza.app.user.domain.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +28,8 @@ public class MeetingService {
     private final MeetingRepository meetingRepository;
 
     private final DateTimeInfoRepository dateTimeInfoRepository;
+
+    private final UserRepository userRepository;
 
 
     // String형의 "2023-10-22"를 LocalDateTime형의 2023-10-22T00:00로 리턴.
@@ -116,5 +120,25 @@ public class MeetingService {
             }
         }
     }
+
+    public void addGuest(MeetingRequestDto.guestRequest req){
+        String password = req.getPassword();
+
+        // 비밀번호가 빈 문자열인 경우 null로 설정
+        if (password != null && password.isEmpty()) {
+            password = null;
+        }
+
+        User.UserBuilder userBuilder = User.builder()
+                .name(req.getName())
+                .isMember(false)
+                .password(password);
+
+        User user = userBuilder.build();
+        userRepository.save(user);
+
+    }
+
+
 }
 
