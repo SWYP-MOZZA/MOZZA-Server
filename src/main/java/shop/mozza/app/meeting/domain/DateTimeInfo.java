@@ -1,24 +1,28 @@
-package shop.mozza.app.timeinfo.domain;
-
+package shop.mozza.app.meeting.domain;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.*;
-import shop.mozza.app.user.domain.User;
+import shop.mozza.app.meeting.domain.Meeting;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 
 @Entity
 @Builder
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Attendee {
+public class DateTimeInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private DateTimeInfo dateTimeInfoId;
+    @Column
+    private LocalDateTime datetime;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private User userId;
-
+    private Meeting meeting;
 }
