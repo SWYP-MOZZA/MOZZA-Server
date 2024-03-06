@@ -18,6 +18,7 @@ import shop.mozza.app.login.oauth2.service.OAuth2SuccessHandler;
 import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.repository.UserRepository;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 
@@ -60,6 +61,7 @@ public class SecurityConfig {
                         configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
 
+
                         return configuration;
                     }
                 }));
@@ -93,7 +95,6 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("my").hasRole("user")
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS

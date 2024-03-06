@@ -40,7 +40,6 @@ public class JWTUtil {
     }
 
     public String createJwt(String username, String role, Long expiredMs) {
-
         return Jwts.builder()
                 .claim("username", username)
                 .claim("role", role)

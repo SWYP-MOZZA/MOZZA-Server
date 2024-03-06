@@ -35,23 +35,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        String requestUri = request.getRequestURI();
-
-        if (requestUri.matches("^\\/login(?:\\/.*)?$")) {
-
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if (requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
-
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-
         String authorization = null;
         Cookie[] cookies = request.getCookies();
+        log.info("JWT : get request");
         for (Cookie cookie : cookies) {
 
             if (cookie.getName().equals("Authorization")) {
@@ -68,9 +54,9 @@ public class JWTFilter extends OncePerRequestFilter {
             //조건이 해당되면 메소드 종료 (필수)
             return;
         }
-
         //토큰
         String token = authorization;
+
 
         if (jwtUtil.isExpired(token)) {
 
@@ -85,11 +71,13 @@ public class JWTFilter extends OncePerRequestFilter {
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
+        log.info("JWT : username " + username);
+        log.info("JWT : role " + role);
+
         //userDTO를 생성하여 값 set
-
         User user = userRepository.findByName(username);
-
         UserDto userDto = UserDto.from(user);
+
 
         //UserDetails에 회원 정보 객체 담기
         KakaoOAuth2User kakaoOAuth2User = new KakaoOAuth2User(userDto);

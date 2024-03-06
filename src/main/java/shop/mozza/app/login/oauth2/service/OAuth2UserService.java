@@ -30,7 +30,6 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
         log.info("oAuth2User");
-        System.out.println(oAuth2User);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = null;
@@ -48,7 +47,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             User newUser = User.builder()
                     .name(username)
                     .isMember(true)
-                    .role("user")
+                    .role("USER")
                     .build();
 
             userRepository.save(newUser);
@@ -69,51 +68,4 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             return new KakaoOAuth2User(userDTO);
         }
     }
-
-//    @Override
-//    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-//        OAuth2User oAuth2User = super.loadUser(userRequest);
-//        Map <String, Object> attributes = oAuth2User.getAttributes();
-//        List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("USER");
-//        User user = saveOrUpdate(attributes);
-//        return new DefaultOAuth2User(authorities, oAuth2User.getAttributes(), user.getName());
-//    }
-//
-//
-//    private User saveOrUpdate(Map<String, Object> attributes) {
-//
-////        String email = (String) attributes.get("email");
-//        String name = (String) attributes.get("nickname");
-//
-//        User user = userRepository.findByName(name);
-//        UserOAuth userOAuth = null;
-//        if (user == null) {
-//            // 신규 회원
-//            user = User.builder()
-//                    .name(name)
-//                    .isMember(true)
-//                    .build();
-//
-//            userOAuth= UserOAuth.builder()
-//                    .user(user)
-//                    .build();
-//            log.debug("신규 회원 생성 : " + user.getName());
-//
-//        }
-//        else {
-//            // 기존 회원
-//            userOAuth = userOAuthRepository.findByUser(user);
-//            user.setName(name);
-//            log.debug("기존 회원 업데이트 : " + user.getName());
-//        }
-//        userRepository.save(user);
-//        userOAuthRepository.save(userOAuth);
-//        return user;
-//    }
 }
-
-// nameAttributeKey
-//        String userNameAttributeName = userRequest.getClientRegistration()
-//                .getProviderDetails()
-//                .getUserInfoEndpoint()
-//                .getUserNameAttributeName();

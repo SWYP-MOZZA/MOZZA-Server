@@ -2,6 +2,8 @@ package shop.mozza.app.login.user.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import shop.mozza.app.util.BaseTimeEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +22,6 @@ public class User {
 
     @Column
     private String name;
-
-    @Column
-    @CreatedDate
-    private LocalDateTime createdAt;
 
     @Column
     private Boolean isMember;

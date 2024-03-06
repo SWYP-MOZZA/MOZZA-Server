@@ -32,7 +32,6 @@ public class KakaoOAuth2User implements OAuth2User {
 
             @Override
             public String getAuthority() {
-
                 return userDto.getRole();
             }
         });
