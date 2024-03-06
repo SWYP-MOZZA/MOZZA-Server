@@ -5,8 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
-
-import shop.mozza.app.user.domain.User;
+import shop.mozza.app.login.user.domain.User;
 
 
 @Entity

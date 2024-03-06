@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shop.mozza.app.login.user.domain.User;
+import shop.mozza.app.login.user.repository.UserRepository;
 import shop.mozza.app.meeting.domain.DateTimeInfo;
 import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
-import shop.mozza.app.user.domain.User;
-import shop.mozza.app.user.domain.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -1,0 +1,85 @@
+package shop.mozza.app.login.jwt;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@Component
+public class JWTUtil {
+
+    private Key key;
+
+
+
+    // 액세스 토큰 유효 시간 (예: 10분)
+    @Value("${jwt.access-token.expire-length}")
+    private long accessTokenValidityInMilliseconds;
+
+    // 리프레시 토큰 유효 시간 (예: 1일)
+    @Value("${jwt.refresh-token.expire-length}")
+    private long refreshTokenValidityInMilliseconds;
+
+
+    public JWTUtil(@Value("${jwt.token.secret-key}")String secret) {
+
+
+        byte[] byteSecretKey = Decoders.BASE64.decode(secret);
+        key = Keys.hmacShaKeyFor(byteSecretKey);
+    }
+
+    public String getUsername(String token) {
+
+        return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().get("username", String.class);
+    }
+
+    public String getRole(String token) {
+
+        return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().get("role", String.class);
+    }
+
+    public Boolean isExpired(String token) {
+
+        return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration().before(new Date());
+    }
+
+
+    public String createAccessToken(String username, String role) {
+        return createJwt(username, role, accessTokenValidityInMilliseconds);
+    }
+
+    public String createRefreshToken(String username) {
+        return createJwt(username, null, refreshTokenValidityInMilliseconds);
+    }
+
+    public String createJwt(String username, String role, Long expiredMs) {
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("username", username);
+        if (role != null) {
+            claims.put("role", role);
+        }
+        return Jwts.builder()
+                .setClaims(claims)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(key)
+                .compact();
+    }
+
+    public String getUsernameFromRefreshToken(String token) {
+        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.getSubject();
+    }
+}
