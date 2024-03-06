@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import shop.mozza.app.global.RefreshTokenService;
 import shop.mozza.app.login.jwt.JWTFilter;
 import shop.mozza.app.login.jwt.JWTUtil;
 import shop.mozza.app.login.oauth2.service.OAuth2SuccessHandler;
@@ -31,13 +32,15 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
 
+    private final RefreshTokenService refreshTokenService;
 
-    public SecurityConfig(OAuth2UserService oAuth2UserService, OAuth2SuccessHandler customSuccessHandler, JWTUtil jwtUtil, UserRepository userRepository) {
+    public SecurityConfig(OAuth2UserService oAuth2UserService, OAuth2SuccessHandler customSuccessHandler, JWTUtil jwtUtil, UserRepository userRepository, RefreshTokenService refreshTokenService) {
 
         this.oAuth2UserService = oAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
 
@@ -82,7 +85,7 @@ public class SecurityConfig {
 
         //JWTFilter 추가
         http
-                .addFilterAfter(new JWTFilter(jwtUtil,userRepository), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil,userRepository,refreshTokenService), OAuth2LoginAuthenticationFilter.class);
         //oauth2
         http
                 .oauth2Login((oauth2) -> oauth2
