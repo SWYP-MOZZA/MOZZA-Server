@@ -1,4 +1,4 @@
-package shop.mozza.app.timeinfo.domain;
+package shop.mozza.app.meeting.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import shop.mozza.app.login.user.domain.User;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Attendee {
+public class Attendee  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +19,6 @@ public class Attendee {
     private DateTimeInfo dateTimeInfoId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private User userId;
+    private User user;
 
 }

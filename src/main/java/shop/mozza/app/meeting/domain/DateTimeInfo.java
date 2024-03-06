@@ -1,12 +1,11 @@
-package shop.mozza.app.timeinfo.domain;
+package shop.mozza.app.meeting.domain;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.*;
-import shop.mozza.app.meeting.domain.Meeting;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 
 
 @Entity
@@ -24,6 +23,5 @@ public class DateTimeInfo {
     private LocalDateTime datetime;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private Meeting meetingId;
-
+    private Meeting meeting;
 }

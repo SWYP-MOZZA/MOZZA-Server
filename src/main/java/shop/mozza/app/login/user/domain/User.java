@@ -20,7 +20,7 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
     @Column
@@ -28,6 +28,17 @@ public class User extends BaseTimeEntity {
 
     @Column
     private String role;
+
+    @Column
+    private String password;
+
+    @Builder
+    public User(String name, Boolean isMember, String role, String password) {
+        this.name = name;
+        this.isMember = isMember;
+        this.role = role;
+        this.password = password;
+    }
 
     @Builder
     public User(String name, Boolean isMember, String role) {
