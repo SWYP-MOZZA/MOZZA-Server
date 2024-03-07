@@ -1,6 +1,7 @@
 package shop.mozza.app.login.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -27,7 +28,6 @@ public class JWTUtil {
     @Value("${jwt.access-token.expire-length}")
     private long accessTokenValidityInMilliseconds;
 
-    // 리프레시 토큰 유효 시간 (예: 1일)
     @Value("${jwt.refresh-token.expire-length}")
     private long refreshTokenValidityInMilliseconds;
 
@@ -82,4 +82,21 @@ public class JWTUtil {
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
+    public boolean validateToken(String token) {
+        try {
+            // Parse the token and extract claims
+            Jws<Claims> claimsJws = Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+
+            // Check if the token expiration time has passed
+            Date expiration = claimsJws.getBody().getExpiration();
+            return expiration != null && expiration.after(new Date());
+        } catch (Exception e) {
+            // Token validation failed
+            return false;
+        }
+    }
+
 }
