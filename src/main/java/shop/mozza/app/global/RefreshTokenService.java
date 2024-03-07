@@ -2,6 +2,7 @@ package shop.mozza.app.global;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RefreshTokenService {
 
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 14; // 리프레시 토큰 유효 기간 (일)
+    @Value("${jwt.refresh-token.expire-length}")
+    private long refreshTokenValidityInSeconds;
+
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -25,7 +28,7 @@ public class RefreshTokenService {
         log.info("Redis Save : Refresh toekn  " + refreshToken);
 
         ValueOperations<String, String> values = redisTemplate.opsForValue();
-        values.set(userId, refreshToken, REFRESH_TOKEN_EXPIRE_TIME, TimeUnit.DAYS);
+        values.set(userId, refreshToken, refreshTokenValidityInSeconds, TimeUnit.SECONDS);
     }
 
     public String findRefreshTokenByUserId(String userId) {
@@ -35,7 +38,6 @@ public class RefreshTokenService {
     }
 
     public void deleteRefreshToken(String userId) {
-
         log.info("Redis delete : User id " + userId);
         redisTemplate.delete(userId);
     }

@@ -45,6 +45,7 @@ public class Meeting {
     @Column
     private Integer NumberofVoter;
 
+    @Builder.Default
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DateTimeInfo> dateTimeInfos = new ArrayList<>();
 

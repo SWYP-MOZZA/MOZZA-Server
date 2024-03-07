@@ -1,6 +1,7 @@
 package shop.mozza.app.login.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -25,11 +26,10 @@ public class JWTUtil {
 
     // 액세스 토큰 유효 시간 (예: 10분)
     @Value("${jwt.access-token.expire-length}")
-    private long accessTokenValidityInMilliseconds;
+    private int accessTokenValidityInSeconds;
 
-    // 리프레시 토큰 유효 시간 (예: 1일)
     @Value("${jwt.refresh-token.expire-length}")
-    private long refreshTokenValidityInMilliseconds;
+    private int refreshTokenValidityInSeconds;
 
 
     public JWTUtil(@Value("${jwt.token.secret-key}")String secret) {
@@ -56,14 +56,14 @@ public class JWTUtil {
 
 
     public String createAccessToken(String username, String role) {
-        return createJwt(username, role, accessTokenValidityInMilliseconds);
+        return createJwt(username, role, accessTokenValidityInSeconds);
     }
 
     public String createRefreshToken(String username) {
-        return createJwt(username, null, refreshTokenValidityInMilliseconds);
+        return createJwt(username, null, refreshTokenValidityInSeconds);
     }
 
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String createJwt(String username, String role, int expiredSeconds) {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", username);
@@ -73,7 +73,7 @@ public class JWTUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .expiration(new Date(System.currentTimeMillis() + expiredSeconds))
                 .signWith(key)
                 .compact();
     }
@@ -82,4 +82,21 @@ public class JWTUtil {
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
+    public boolean validateToken(String token) {
+        try {
+            // Parse the token and extract claims
+            Jws<Claims> claimsJws = Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+
+            // Check if the token expiration time has passed
+            Date expiration = claimsJws.getBody().getExpiration();
+            return expiration != null && expiration.after(new Date());
+        } catch (Exception e) {
+            // Token validation failed
+            return false;
+        }
+    }
+
 }
