@@ -26,10 +26,10 @@ public class JWTUtil {
 
     // 액세스 토큰 유효 시간 (예: 10분)
     @Value("${jwt.access-token.expire-length}")
-    private long accessTokenValidityInMilliseconds;
+    private int accessTokenValidityInSeconds;
 
     @Value("${jwt.refresh-token.expire-length}")
-    private long refreshTokenValidityInMilliseconds;
+    private int refreshTokenValidityInSeconds;
 
 
     public JWTUtil(@Value("${jwt.token.secret-key}")String secret) {
@@ -56,14 +56,14 @@ public class JWTUtil {
 
 
     public String createAccessToken(String username, String role) {
-        return createJwt(username, role, accessTokenValidityInMilliseconds);
+        return createJwt(username, role, accessTokenValidityInSeconds);
     }
 
     public String createRefreshToken(String username) {
-        return createJwt(username, null, refreshTokenValidityInMilliseconds);
+        return createJwt(username, null, refreshTokenValidityInSeconds);
     }
 
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String createJwt(String username, String role, int expiredSeconds) {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", username);
@@ -73,7 +73,7 @@ public class JWTUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .expiration(new Date(System.currentTimeMillis() + expiredSeconds))
                 .signWith(key)
                 .compact();
     }

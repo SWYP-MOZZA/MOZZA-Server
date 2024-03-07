@@ -36,7 +36,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserRepository userRepository;
 
     @Value("${jwt.access-token.expire-length}")
-    private long accessTokenValidityInMilliseconds;
+    private long accessTokenValidityInSeconds;
 
 
     @Override
@@ -65,7 +65,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         loginResponse.setStatusCode(200);
         loginResponse.setAccessToken(accessToken);
         loginResponse.setRefreshToken(refreshToken);
-        loginResponse.setExpiresIn((int)(accessTokenValidityInMilliseconds / 1000));
+        loginResponse.setExpiresIn((int)(accessTokenValidityInSeconds));
         loginResponse.setUserId(userId);
         loginResponse.setUserName(username);
 //        loginResponse.setUserEmail("");

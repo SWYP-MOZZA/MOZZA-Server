@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class RefreshTokenService {
 
     @Value("${jwt.refresh-token.expire-length}")
-    private long refreshTokenValidityInMilliseconds;
+    private long refreshTokenValidityInSeconds;
 
 
     @Autowired
@@ -28,7 +28,7 @@ public class RefreshTokenService {
         log.info("Redis Save : Refresh toekn  " + refreshToken);
 
         ValueOperations<String, String> values = redisTemplate.opsForValue();
-        values.set(userId, refreshToken, refreshTokenValidityInMilliseconds, TimeUnit.MILLISECONDS);
+        values.set(userId, refreshToken, refreshTokenValidityInSeconds, TimeUnit.SECONDS);
     }
 
     public String findRefreshTokenByUserId(String userId) {

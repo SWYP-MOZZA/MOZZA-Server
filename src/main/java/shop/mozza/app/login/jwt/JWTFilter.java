@@ -1,5 +1,6 @@
 package shop.mozza.app.login.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.login.oauth2.dto.response.TokenResponse;
 import shop.mozza.app.login.user.domain.KakaoOAuth2User;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.dto.UserDto;
@@ -31,7 +33,7 @@ public class JWTFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     @Value("${jwt.access-token.expire-length}")
-    private long accessTokenValidityInMilliseconds;
+    private int accessTokenValidityInSeconds;
 
 
     @Override
@@ -59,8 +61,7 @@ public class JWTFilter extends OncePerRequestFilter {
                     // 새 액세스 토큰 발급
                     String newAccessToken = jwtUtil.createAccessToken(username, user.getRole());
                     // 쿠키에 새 액세스 토큰 추가
-                    sendTokenInJsonResponse(response, newAccessToken, accessTokenValidityInMilliseconds);
-
+                    sendTokenInJsonResponse(response, newAccessToken, accessTokenValidityInSeconds);
                 }
             }
         }
@@ -84,17 +85,14 @@ public class JWTFilter extends OncePerRequestFilter {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
 
-        // 토큰의 만료 시간 계산
         long expiryDate = System.currentTimeMillis() + validityPeriod;
         Date tokenExpiryDate = new Date(expiryDate);
 
-        // JSON 객체 생성 및 응답 설정
-        String jsonResponse = String.format(
-                "{\"accessToken\":\"%s\", \"tokenType\":\"Bearer\", \"expiresAt\":\"%s\"}",
-                newAccessToken,
-                tokenExpiryDate.toString()
-        );
+        TokenResponse tokenResponseDto = new TokenResponse(newAccessToken, tokenExpiryDate);
 
+        // ObjectMapper를 사용하여 DTO를 JSON 문자열로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonResponse = objectMapper.writeValueAsString(tokenResponseDto);
         response.getWriter().write(jsonResponse);
     }
 }
