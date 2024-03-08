@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import shop.mozza.app.base.BaseController;
 import shop.mozza.app.exception.ResponseMessage;
+import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.service.MeetingService;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
+import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +19,8 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 public class MeetingController extends BaseController {
-    @Autowired
-    private MeetingService meetingService;
+
+    private final MeetingService meetingService;
 
     @PostMapping("/meeting/create")
     public ResponseEntity<?> createMeeting(@RequestBody MeetingRequestDto.makeMeetingRequest meetingRequest) {
@@ -41,8 +41,8 @@ public class MeetingController extends BaseController {
     }
 
     @PostMapping("/guest")
-    public ResponseEntity<?> addGuest(@RequestBody MeetingRequestDto.guestRequest guestRequest){
-        try{
+    public ResponseEntity<?> addGuest(@RequestBody MeetingRequestDto.guestRequest guestRequest) {
+        try {
             meetingService.addGuest(guestRequest);
             Map<String, Object> response = new HashMap<>();
             response.put("statusCode", 200);
@@ -50,11 +50,27 @@ public class MeetingController extends BaseController {
             response.put("accessToken", "bearer+"); // user 완성되면 수정
             return ResponseEntity.ok(response);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("statusCode", 400);
             errorResponse.put("ResponseMessage", ResponseMessage.GUEST_LOGIN_FAILED);
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
+
+    @PutMapping("/meeting/{id}/notification")
+    public ResponseEntity<?> setNotification(@PathVariable Long id, @RequestBody MeetingRequestDto.notificationRequest notificationRequest) {
+        try {
+            Long meetingId = id;
+            meetingService.setNotification(notificationRequest, meetingId);
+            if (notificationRequest.getAbleNotification()) {
+                return ResponseEntity.ok(new MeetingResponseDto.notificationResponse(200, ResponseMessage.SET_NOTIFICATION_ON_SUCCESS));
+            } else {
+                return ResponseEntity.ok(new MeetingResponseDto.notificationResponse(200, ResponseMessage.SET_NOTIFICATION_OFF_SUCCESS));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.notificationResponse(400, ResponseMessage.SET_NOTIFICATION_FAILED));
+        }
+    }
+
 }

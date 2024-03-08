@@ -140,5 +140,18 @@ public class MeetingService {
     }
 
 
+    public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
+        Boolean ableNotification = req.getAbleNotification();
+        Integer numberOfVoter = req.getNumberOfVoter();
+
+        Meeting meeting = meetingRepository.findMeetingById(id);
+
+        if (ableNotification){
+            meeting.updateNotificationSettings(numberOfVoter);
+        }else{
+            meeting.updateNotificationSettings(null);
+        }
+        meetingRepository.save(meeting);
+    }
 }
 
