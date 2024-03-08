@@ -43,11 +43,15 @@ public class Meeting {
     private Boolean onlyDate;
 
     @Column
-    private Integer NumberofVoter;
+    private Integer NumberOfVoter;
 
     @Builder.Default
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DateTimeInfo> dateTimeInfos = new ArrayList<>();
+
+    public void updateNotificationSettings(Integer notification){
+        this.notification = notification;
+    }
 
 
 }

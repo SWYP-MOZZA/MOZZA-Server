@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
 import shop.mozza.app.meeting.domain.DateTimeInfo;
@@ -140,5 +141,19 @@ public class MeetingService {
     }
 
 
+
+    public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
+        Boolean ableNotification = req.getAbleNotification();
+        Integer numberOfVoter = req.getNumberOfVoter();
+
+        Meeting meeting = meetingRepository.findMeetingById(id);
+
+        if (ableNotification){
+            meeting.updateNotificationSettings(numberOfVoter);
+        }else{
+            meeting.updateNotificationSettings(null);
+        }
+        meetingRepository.save(meeting);
+    }
 }
 

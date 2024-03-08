@@ -24,4 +24,11 @@ public class MeetingRequestDto {
         private String name;
         private String password;
     }
+
+    @Getter
+    @Setter
+    public static class notificationRequest{
+        private Boolean ableNotification;
+        private Integer numberOfVoter;
+    }
 }
