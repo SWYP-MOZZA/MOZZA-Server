@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.mozza.app.login.user.domain.User;
-import shop.mozza.app.login.user.repository.UserRepository;
+
 import shop.mozza.app.meeting.domain.DateTimeInfo;
 import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
+import shop.mozza.app.user.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -120,25 +120,6 @@ public class MeetingService {
             }
         }
     }
-
-    public void addGuest(MeetingRequestDto.guestRequest req){
-        String password = req.getPassword();
-
-        // 비밀번호가 빈 문자열인 경우 null로 설정
-        if (password != null && password.isEmpty()) {
-            password = null;
-        }
-
-        User.UserBuilder userBuilder = User.builder()
-                .name(req.getName())
-                .isMember(false)
-                .password(password);
-
-        User user = userBuilder.build();
-        userRepository.save(user);
-
-    }
-
 
     public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
         Boolean ableNotification = req.getAbleNotification();
