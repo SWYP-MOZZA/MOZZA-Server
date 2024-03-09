@@ -14,6 +14,9 @@ env:
   S3_BUCKET_NAME: mozza-server-data
   CODE_DEPLOY_APP_NAME: mozza-server-deploy
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: mozza-server-deploy-group
+  AWS_DEFAULT_REGION: ap-northeast-2
+
+
 
 permissions:
   contents: read
