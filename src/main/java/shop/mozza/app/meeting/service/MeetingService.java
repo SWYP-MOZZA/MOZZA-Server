@@ -81,7 +81,7 @@ public class MeetingService {
         return timeSlots;
     }
 
-    public void createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
+    public Long createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
         Meeting meeting = Meeting
                 .builder()
                 .name(req.getName())
@@ -99,6 +99,7 @@ public class MeetingService {
         } else {
             createDateTimeMeeting(meeting, req);
         }
+        return meeting.getId();
     }
 
     private void createDateMeeting(Meeting meeting, List<String> dates) {
@@ -172,9 +173,9 @@ public class MeetingService {
     }
 
     public Meeting findMeetingById(Long id) {
-        return meetingRepository.findById(id)
-                .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException("모임이 없습니다."));
+        return meetingRepository.findById(id).orElse(null);
     }
+
 
     private String findStartDate(List<DateTimeInfo> dateTimeInfos) {
         if (dateTimeInfos.isEmpty()) {
