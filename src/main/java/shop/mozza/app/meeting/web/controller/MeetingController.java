@@ -9,7 +9,6 @@ import shop.mozza.app.exception.ResponseMessage;
 import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.service.UserService;
-import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.service.MeetingService;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
@@ -38,7 +37,7 @@ public class MeetingController extends BaseController {
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.MAKE_MEETING_SUCCESS);
-            response.put("MeetingId",meetingId);
+            response.put("MeetingId", meetingId);
             response.put("AccessToken", "bearer" + accessToken);
             response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
@@ -87,10 +86,9 @@ public class MeetingController extends BaseController {
     }
 
 
-
     //모임 요약 정보
     @GetMapping("/meeting/{id}/short")
-    public ResponseEntity<?> getShortMeetingInfo(@PathVariable Long id){
+    public ResponseEntity<?> getShortMeetingInfo(@PathVariable Long id) {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
@@ -106,7 +104,7 @@ public class MeetingController extends BaseController {
             response.put("Data", summaryResponse);
             return ResponseEntity.ok(response);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("StatusCode", 400);
             errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_FAILED);
@@ -114,5 +112,30 @@ public class MeetingController extends BaseController {
         }
     }
 
+    //모임 투표를 위한 정보
+    @GetMapping("meeting/{id}/choice")
+    public ResponseEntity<?> getMeetingOptions(@PathVariable Long id) {
+        try {
+            Meeting meeting = meetingService.findMeetingById(id);
+            if (meeting == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("StatusCode", 404);
+                errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_FAILED);
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting);
+            Map<String, Object> response = new HashMap<>();
+            response.put("StatusCode", 200);
+            response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
+            response.put("Data", choiceResponse);
+            return ResponseEntity.ok(response);
 
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("StatusCode", 400);
+            errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_FAILED);
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
 }

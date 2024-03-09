@@ -1,5 +1,6 @@
 package shop.mozza.app.meeting.web.dto;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.util.List;
@@ -30,6 +31,17 @@ public class MeetingResponseDto {
         private String endTime;
         private Integer numberOfVoter;
         private List<String> attendee;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class ChoiceResponse{
+        private Long meetingId;
+        private String name;
+        private List<String> date;
+        private String startTime;
+        private String endTime;
     }
 
 
