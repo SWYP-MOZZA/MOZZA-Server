@@ -11,4 +11,8 @@ public class ResponseMessage {
     public static final String SET_NOTIFICATION_ON_SUCCESS = "카카오톡 알림 수신 동의 완료";
     public static final String SET_NOTIFICATION_OFF_SUCCESS = "카카오톡 알림 수신 거부 완료";
     public static final String SET_NOTIFICATION_FAILED = "카카오톡 알림 수신 동의가 정상적으로 처리되지 않았습니다.";
+    public static final String GET_MEEITNG_INFO_FAILED = "링크 접속에 실패했습니다.";
+    public static final String GET_MEEITNG_FAILED = "모임이 존재하지 않습니다.";
+    public static final String GET_MEEITNG_INFO_SUCCESS = "링크 접속 성공했습니다.";
+
 }
