@@ -42,8 +42,6 @@ public class MeetingService {
     private EntityManager entityManager;
 
 
-
-
     // String형의 "2023-10-22"를 LocalDateTime형의 2023-10-22T00:00로 리턴.
     private LocalDateTime stringToDateOnly(String dateString) {
         LocalDateTime localDate = LocalDateTime.parse(dateString);
@@ -154,7 +152,6 @@ public class MeetingService {
         return user;
 
 
-
     }
 
 
@@ -263,5 +260,29 @@ public class MeetingService {
         return response;
 
     }
+
+    private List<String> findAllDates(List<DateTimeInfo> dateTimeInfos, Long meetingId) {
+        Set<String> dateSet = new HashSet<>();
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getMeeting().getId().equals(meetingId)) {
+                dateSet.add(dateTimeInfo.getDatetime().toLocalDate().toString());
+            }
+        }
+        return new ArrayList<>(dateSet);
+    }
+    public MeetingResponseDto.ChoiceResponse createChoiceResponse(Meeting meeting) {
+        List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
+        MeetingResponseDto.ChoiceResponse response = MeetingResponseDto.ChoiceResponse
+                .builder()
+                .meetingId(meeting.getId())
+                .name(meeting.getName())
+                .date(findAllDates(dateTimeInfos, meeting.getId()))
+                .startTime(findStartTime(dateTimeInfos))
+                .endTime(findEndTime(dateTimeInfos))
+                .build();
+        return response;
+    }
 }
+
+
 
