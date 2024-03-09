@@ -10,4 +10,10 @@ public class CustomExceptions {
         public MeetingNotFoundException(String message){super(message);}
     }
 
+    public static class RefreshTokenException extends RuntimeException{
+        public RefreshTokenException(String message){super(message);}
+    }
+
+
+
 }

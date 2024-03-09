@@ -41,8 +41,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // Authorization 헤더에서 토큰 추출
         String authorization = request.getHeader("Authorization");
-
-        authorization = authorization.replace("Bearer ", "");
+        if (authorization != null){
+            authorization = authorization.replace("Bearer ", "");
+        }
 
         //Authorization 헤더 검증
         if (authorization == null || StringUtils.isEmpty(authorization)) {
@@ -52,25 +53,11 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
 
-        // Refresh Token이 포함되어 있는지 확인
-        String refreshToken = request.getHeader("RefreshToken");
-        if (refreshToken != null){
-            refreshToken = refreshToken.replace("Bearer ", "");
-        }
-
 
         // AccessToken이 만료되었을 경우에만 Refresh Token을 사용하여 AccessToken을 갱신
         if (jwtUtil.isExpired(authorization)) {
-            if (!StringUtils.isEmpty(refreshToken) && refreshTokenService.validateRefreshToken(refreshToken)) {
-                String username = jwtUtil.getUsernameFromRefreshToken(refreshToken);
-                User user = userRepository.findByName(username);
-                if (user != null) {
-                    // 새 액세스 토큰 발급
-                    String newAccessToken = jwtUtil.createAccessToken(username, user.getRole());
-                    // 쿠키에 새 액세스 토큰 추가
-                    sendTokenInJsonResponse(response, newAccessToken, accessTokenValidityInSeconds);
-                }
-            }
+            filterChain.doFilter(request, response);
+            return;
         }
 
         // AccessToken이 유효한 경우, 사용자 정보를 SecurityContext에 설정
@@ -86,6 +73,8 @@ public class JWTFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+
+
     }
 
     private void sendTokenInJsonResponse(HttpServletResponse response, String newAccessToken, long validityPeriod) throws IOException {
@@ -101,6 +90,7 @@ public class JWTFilter extends OncePerRequestFilter {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResponse = objectMapper.writeValueAsString(tokenResponseDto);
         response.getWriter().write(jsonResponse);
+
     }
 }
 

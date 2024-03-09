@@ -1,22 +1,73 @@
 package shop.mozza.app.login.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.login.jwt.JWTUtil;
+import shop.mozza.app.login.oauth2.dto.response.KakaoUserInfoResponse;
+import shop.mozza.app.login.oauth2.dto.response.OAuth2LoginResponse;
 import shop.mozza.app.login.user.domain.KakaoOAuth2User;
 import shop.mozza.app.login.user.domain.User;
+import shop.mozza.app.login.user.dto.UserDto;
 import shop.mozza.app.login.user.repository.UserRepository;
-
+import shop.mozza.app.login.oauth2.dto.response.OAuth2Response;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
 
+
+    @Value("${jwt.access-token.expire-length}")
+    private long accessTokenValidityInSeconds;
+
     private final UserRepository userRepository;
+
+    private final JWTUtil jwtUtil;
+
+    private final RefreshTokenService refreshTokenService;
+
+
+    public User createUser (String username) {
+        User exitsUser = userRepository.findByName(username);
+        if (exitsUser == null) {
+            User newUser = User.builder()
+                    .name(username)
+                    .isMember(true)
+                    .role("USER")
+                    .build();
+            userRepository.save(newUser);
+            return newUser;
+        }
+        else {
+            exitsUser.updateUserName(username);
+            userRepository.save(exitsUser);
+            return exitsUser;
+        }
+    }
+
+    public OAuth2LoginResponse getLoginReponse(User user) {
+
+        String refreshToken = jwtUtil.createRefreshToken(user.getName());
+        refreshTokenService.saveRefreshToken(user.getName(), refreshToken);
+
+
+        return OAuth2LoginResponse.builder()
+                .statusCode(200)
+                .accessToken(jwtUtil.createAccessToken(user.getName(), "USER"))
+                .refreshToken(refreshToken)
+                .expiresIn(accessTokenValidityInSeconds)
+                .userId(user.getId())
+                .userName(user.getName())
+                .build();
+
+    }
+
 
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

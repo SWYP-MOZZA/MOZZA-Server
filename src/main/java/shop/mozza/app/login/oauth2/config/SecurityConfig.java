@@ -82,13 +82,13 @@ public class SecurityConfig {
         //JWTFilter 추가
         http
                 .addFilterAfter(new JWTFilter(jwtUtil,userRepository,refreshTokenService), OAuth2LoginAuthenticationFilter.class);
-        //oauth2
-        http
-                .oauth2Login((oauth2) -> oauth2
-                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(oAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                );
+//        //oauth2
+//        http
+//                .oauth2Login((oauth2) -> oauth2
+//                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+//                                .userService(oAuth2UserService))
+//                        .successHandler(customSuccessHandler)
+//                );
 
         //경로별 인가 작업
         http
@@ -96,6 +96,7 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/guest").permitAll()
                         .requestMatchers("/meeting/create").permitAll()
+                        .requestMatchers("/oauth").permitAll()
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS
