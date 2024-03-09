@@ -5,13 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import shop.mozza.app.exception.CustomExceptions;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
+import shop.mozza.app.meeting.domain.Attendee;
 import shop.mozza.app.meeting.domain.DateTimeInfo;
 import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
+import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -84,12 +87,12 @@ public class MeetingService {
         if (req.getOnlyDate() == true) {
             createDateMeeting(meeting, dates);
         } else {
-            createDateTimeMeeting(meeting,req);
+            createDateTimeMeeting(meeting, req);
         }
     }
 
-    private void createDateMeeting(Meeting meeting,List<String> dates ) {
-        for(String date : dates){
+    private void createDateMeeting(Meeting meeting, List<String> dates) {
+        for (String date : dates) {
             DateTimeInfo dti = DateTimeInfo
                     .builder()
                     .datetime(stringToDateOnly(date))
@@ -122,7 +125,7 @@ public class MeetingService {
         }
     }
 
-    public void addGuest(MeetingRequestDto.guestRequest req){
+    public void addGuest(MeetingRequestDto.guestRequest req) {
         String password = req.getPassword();
 
         // 비밀번호가 빈 문자열인 경우 null로 설정
@@ -140,20 +143,61 @@ public class MeetingService {
 
     }
 
-
-
     public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
         Boolean ableNotification = req.getAbleNotification();
         Integer numberOfVoter = req.getNumberOfVoter();
 
         Meeting meeting = meetingRepository.findMeetingById(id);
 
-        if (ableNotification){
+        if (ableNotification) {
             meeting.updateNotificationSettings(numberOfVoter);
-        }else{
+        } else {
             meeting.updateNotificationSettings(null);
         }
         meetingRepository.save(meeting);
+    }
+
+    public Meeting findMeetingById(Long id) {
+        return meetingRepository.findById(id)
+                .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException("모임이 없습니다."));
+    }
+
+
+    public MeetingResponseDto.SummaryResponse createSummaryResponse(Meeting meeting) {
+        MeetingResponseDto.SummaryResponse response = new MeetingResponseDto.SummaryResponse();
+        response.setMeetingId(meeting.getId());
+        response.setName(meeting.getName());
+        response.setNumberOfVoter(meeting.getNumberOfVoter());
+
+        // Set start and end dates
+        List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
+        if (!dateTimeInfos.isEmpty()) {
+            DateTimeInfo earliestDateTimeInfo = dateTimeInfos.get(0);
+            DateTimeInfo latestDateTimeInfo = dateTimeInfos.get(0);
+            for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+                if (dateTimeInfo.getDatetime().isBefore(earliestDateTimeInfo.getDatetime())) {
+                    earliestDateTimeInfo = dateTimeInfo;
+                }
+                if (dateTimeInfo.getDatetime().isAfter(latestDateTimeInfo.getDatetime())) {
+                    latestDateTimeInfo = dateTimeInfo;
+                }
+            }
+            response.setStartDate(earliestDateTimeInfo.getDatetime().toLocalDate().toString());
+            response.setEndDate(latestDateTimeInfo.getDatetime().toLocalDate().toString());
+            response.setStartTime(earliestDateTimeInfo.getDatetime().toLocalTime().toString());
+            response.setEndTime(latestDateTimeInfo.getDatetime().toLocalTime().toString());
+        }
+
+        // Set attendees
+        List<String> attendees = new ArrayList<>();
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            for (Attendee attendee : dateTimeInfo.getAttendees()) {
+                attendees.add(attendee.getUser().getName());
+            }
+        }
+        response.setAttendee(attendees);
+
+        return response;
     }
 }
 
