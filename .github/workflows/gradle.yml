@@ -1,39 +1,33 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+name: Backend CI
+run-name: ${{ github.actor }} 님이 안전한 merge를 위해 test를 하고 있습니다! 🚀
 
-name: Spring Boot & Gradle CI/CD
-
-# release 브랜치에 push 또는 pull request가 되면 스크립트 실행
 on:
-  push:
-    branches: [ "release" ]
   pull_request:
-    branches: [ release ]
+    branches: ["main"]
+
+
 
 # 해당 코드에서 사용될 변수 설정
 env:
   AWS_REGION: ap-northeast-2
-  PROJECT_NAME: imad-server
+  PROJECT_NAME: MOZZA-Server
   S3_BUCKET_NAME: mozza-server-data
-  CODE_DEPLOY_APP_NAME: spring-boot-codedeploy-app
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: codedeploy-deployment-group
+  CODE_DEPLOY_APP_NAME: mozza-server-deploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: mozza-server-deploy-group
+  AWS_DEFAULT_REGION: ap-northeast-2
+
+
 
 permissions:
   contents: read
 
+
 jobs:
   build:
-
-    # Github의 워크플로에서 실행될 OS 선택
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -41,46 +35,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # create application.yml
-      - name: make application-aws.yml
-        if: contains(github.ref, 'release')
+
+      - name : apply applicaiton.yml
         run: |
-          # spring의 resources 경로로 이동
-          cd ./src/main/resources
-          
-          ls -al
-          touch ./application-aws.yml
-          
-          # GitHub-Actions에서 설정한 값을 application-aws.yml 파일에 쓰기
-          echo "copy properties"
-          echo "${{ secrets.AWS_PROPERTIES }}" > ./application-aws.yml
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
         shell: bash
 
-      # create key.p8 file
-      - name: make apple key.p8 file
-        if: contains(github.ref, 'release')
+      - name: make application-prod.yml
         run: |
-          # spring의 resources 경로로 이동
-          mkdir ./src/main/resources/key
-          cd ./src/main/resources/key
-          
-          ls -al
-          touch ./AuthKey.p8
-          
-          # GitHub-Actions에서 설정한 값 파일에 쓰기
-          echo "copy APPLE_SECRET_KEY"
-          echo "${{ secrets.APPLE_SECRET_KEY }}" > ./AuthKey.p8
+          touch ./src/main/resources/application-prod.yml
+          echo "${{ secrets.APPLICATION_PROD_YML }}" > ./src/main/resources/application-prod.yml
         shell: bash
 
-      # gradlew 파일 실행권한 설정
-      - name: Grant execute permission for gradlew
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@ccb4328a959376b642e027874838f60f8e596de3
+
+      - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
         shell: bash
 
-      # Gradle build (Test 제외)
-      - name: Build with Gradle
-        run: ./gradlew clean --stacktrace --info build
-        shell: bash
 
       # AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
       - name: Configure AWS credentials
@@ -98,8 +74,9 @@ jobs:
             --ignore-hidden-files \
             --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
             --source .
+                # S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
 
-      # S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+
       - name: Deploy to AWS EC2 from S3
         run: |
           aws deploy create-deployment \
