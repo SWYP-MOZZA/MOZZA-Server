@@ -4,6 +4,12 @@ run-name: ${{ github.actor }} 님이 안전한 merge를 위해 test를 하고 �
 on:
   pull_request:
     branches: ["main"]
+
+    
+env: # 현재 스크립트에서 사용할 환경변수 정의
+  S3_BUCKET_NAME: mozza-server-data
+  CODE_DEPLOY_APPLICATION_NAME: mozza-server-deploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME : mozza-server-deploy-group
   
 jobs:
   build:
@@ -18,13 +24,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup MySQL
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          mysql database: 'mozza'
-          mysql root user: ${{ secrets.MYSQL_USER }}
-          mysql root password: ${{ secrets.MYSQL_PASSWORD }}
           
+      - name : apply applicaiton.yml
+        run: |
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+        shell: bash
+        
+      - name: make application-prod.yml
+        run: |
+          touch ./src/main/resources/application-prod.yml
+          echo "${{ secrets.APPLICATION_PROD_YML }}" > ./src/main/resources/application-prod.yml
+        shell: bash
+
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@ccb4328a959376b642e027874838f60f8e596de3
         
@@ -33,3 +44,22 @@ jobs:
         
       - name: Build with Gradle
         run: ./gradlew build -x test
+
+      - name: Make zip file
+        run: zip -r ./$GITHUB_SHA.zip .
+        shell: bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
+
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name $CODE_DEPLOY_APPLICATION_NAME --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name $CODE_DEPLOY_DEPLOYMENT_GROUP_NAME --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip
+
+
