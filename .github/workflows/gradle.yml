@@ -18,7 +18,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   PROJECT_NAME: imad-server
-  S3_BUCKET_NAME: ryuforaws01-github-actions-s3-bucket
+  S3_BUCKET_NAME: mozza-server-data
   CODE_DEPLOY_APP_NAME: spring-boot-codedeploy-app
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: codedeploy-deployment-group
 
