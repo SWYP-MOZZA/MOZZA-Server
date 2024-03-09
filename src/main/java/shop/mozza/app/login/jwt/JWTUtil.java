@@ -81,7 +81,7 @@ public class JWTUtil {
         if (role != null) {
             claims.put("role", role);
         }
-        return Jwts.builder()
+        return "Bearer "+Jwts.builder()
                 .setClaims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredSeconds))
@@ -91,7 +91,7 @@ public class JWTUtil {
 
     public String createJwt(int expiredSeconds) {
         Map<String, Object> claims = new HashMap<>();
-        return Jwts.builder()
+        return "Bearer "+Jwts.builder()
                 .setClaims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredSeconds))

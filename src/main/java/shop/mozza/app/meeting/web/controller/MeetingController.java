@@ -37,8 +37,8 @@ public class MeetingController extends BaseController {
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.MAKE_MEETING_SUCCESS);
-            response.put("MeetingId", meetingId);
-            response.put("AccessToken", "bearer" + accessToken);
+            response.put("MeetingId",meetingId);
+            response.put("AccessToken", accessToken);
             response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -59,7 +59,7 @@ public class MeetingController extends BaseController {
 
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.GUEST_LOGIN_SUCCESS);
-            response.put("AccessToken", "bearer" + accessToken);
+            response.put("AccessToken", accessToken);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

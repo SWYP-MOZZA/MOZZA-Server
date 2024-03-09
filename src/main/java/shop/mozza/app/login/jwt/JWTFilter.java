@@ -41,9 +41,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // Authorization 헤더에서 토큰 추출
         String authorization = request.getHeader("Authorization");
+
+        authorization = authorization.replace("Bearer ", "");
+
         //Authorization 헤더 검증
         if (authorization == null || StringUtils.isEmpty(authorization)) {
-            log.info("JWT: Authorization header is missing");
+            log.debug("JWT: Authorization header is missing");
             filterChain.doFilter(request, response);
             return;
         }
@@ -51,6 +54,10 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // Refresh Token이 포함되어 있는지 확인
         String refreshToken = request.getHeader("RefreshToken");
+        if (refreshToken != null){
+            refreshToken = refreshToken.replace("Bearer ", "");
+        }
+
 
         // AccessToken이 만료되었을 경우에만 Refresh Token을 사용하여 AccessToken을 갱신
         if (jwtUtil.isExpired(authorization)) {
