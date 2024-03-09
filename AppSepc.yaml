@@ -21,6 +21,7 @@ permissions:
     owner: ec2-user
     group: ec2-user
 
+
 # 배포 이후에 실행할 일련의 라이프사이클
 # 파일을 설치한 후 `AfterInstall` 에서 기존에 실행중이던 애플리케이션을 종료
 # `ApplicationStart` 에서 새로운 애플리케이션을 실행
