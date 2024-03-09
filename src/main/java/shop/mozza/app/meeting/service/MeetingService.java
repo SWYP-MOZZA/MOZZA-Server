@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import shop.mozza.app.login.jwt.token.JWTGuestTokenPublisher;
+import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
 import shop.mozza.app.exception.CustomExceptions;
 import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.domain.User;
@@ -32,13 +34,14 @@ import java.util.*;
 public class MeetingService {
 
     private final MeetingRepository meetingRepository;
-
     private final DateTimeInfoRepository dateTimeInfoRepository;
-
     private final UserRepository userRepository;
+    private final JWTTokenPublisher jwtTokenPublisher;
 
     @PersistenceContext
     private EntityManager entityManager;
+
+
 
 
     // String형의 "2023-10-22"를 LocalDateTime형의 2023-10-22T00:00로 리턴.
@@ -132,7 +135,7 @@ public class MeetingService {
         }
     }
 
-    public void addGuest(MeetingRequestDto.guestRequest req) {
+    public User addGuest(MeetingRequestDto.guestRequest req) {
         String password = req.getPassword();
 
         // 비밀번호가 빈 문자열인 경우 null로 설정
@@ -147,8 +150,12 @@ public class MeetingService {
 
         User user = userBuilder.build();
         userRepository.save(user);
+        return user;
+
+
 
     }
+
 
     public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
         Boolean ableNotification = req.getAbleNotification();

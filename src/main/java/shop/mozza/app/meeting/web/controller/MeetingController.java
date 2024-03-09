@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import shop.mozza.app.base.BaseController;
 import shop.mozza.app.exception.ResponseMessage;
+import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
+import shop.mozza.app.login.user.domain.User;
+import shop.mozza.app.login.user.service.UserService;
 import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.meeting.domain.Meeting;
@@ -22,17 +25,24 @@ import java.util.Map;
 public class MeetingController extends BaseController {
 
     private final MeetingService meetingService;
-    private final OAuth2UserService oAuth2UserService;
+    private final JWTTokenPublisher jwtTokenPublisher;
+    private final UserService userService;
 
     @PostMapping("/meeting/create")
     public ResponseEntity<?> createMeeting(@RequestBody MeetingRequestDto.makeMeetingRequest meetingRequest) {
         try {
-            User user = oAuth2UserService.getCurrentUser();
+            User user = userService.getCurrentUser();
             meetingService.createMeeting(meetingRequest, user);
             Map<String, Object> response = new HashMap<>();
+
+            // To DO - token 생성
+
+            String accesToeken = jwtTokenPublisher.IssueMeetingToken();
+
+
             response.put("statusCode", 200);
             response.put("message", ResponseMessage.MAKE_MEETING_SUCCESS);
-            response.put("accessToken", "bearer+"); // user 완성되면 수정
+            response.put("accessToken", "bearer+"+accesToeken); // user 완성되면 수정
             response.put("url", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -46,11 +56,15 @@ public class MeetingController extends BaseController {
     @PostMapping("/guest")
     public ResponseEntity<?> addGuest(@RequestBody MeetingRequestDto.guestRequest guestRequest) {
         try {
-            meetingService.addGuest(guestRequest);
+            User user = meetingService.addGuest(guestRequest);
             Map<String, Object> response = new HashMap<>();
+
+            // To DO Jwt 토큰 발급
+            String accessToken = jwtTokenPublisher.IssueGuestToken(user);
+
             response.put("statusCode", 200);
             response.put("message", ResponseMessage.GUEST_LOGIN_SUCCESS);
-            response.put("accessToken", "bearer+"); // user 완성되면 수정
+            response.put("accessToken", "bearer+"+accessToken); // user 완성되면 수정
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
