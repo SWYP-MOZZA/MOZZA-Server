@@ -54,13 +54,12 @@ public class SecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
                         CorsConfiguration configuration = new CorsConfiguration();
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
-                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                        configuration.setAllowedOrigins(Collections.singletonList("*")); // 모든 출처 허용
+                        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 필요한 메소드만 명시하거나 모두 허용
+                        configuration.setAllowCredentials(true); // 크로스-도메인 쿠키 허용
+                        configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
+                        configuration.setMaxAge(3600L); // 사전 요청 결과의 최대 캐시 시간 설정
+                        configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization")); // 클라이언트에 노출될 특정 헤더 설정
 
                         return configuration;
                     }
@@ -83,13 +82,13 @@ public class SecurityConfig {
         //JWTFilter 추가
         http
                 .addFilterAfter(new JWTFilter(jwtUtil,userRepository,refreshTokenService), OAuth2LoginAuthenticationFilter.class);
-        //oauth2
-        http
-                .oauth2Login((oauth2) -> oauth2
-                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(oAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                );
+//        //oauth2
+//        http
+//                .oauth2Login((oauth2) -> oauth2
+//                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+//                                .userService(oAuth2UserService))
+//                        .successHandler(customSuccessHandler)
+//                );
 
         //경로별 인가 작업
         http
@@ -97,6 +96,7 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/guest").permitAll()
                         .requestMatchers("/meeting/create").permitAll()
+                        .requestMatchers("/oauth").permitAll()
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS
