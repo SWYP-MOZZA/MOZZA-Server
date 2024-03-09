@@ -7,7 +7,13 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import shop.mozza.app.login.user.domain.GuestUser;
+import shop.mozza.app.login.user.domain.User;
+import shop.mozza.app.login.user.dto.UserDto;
 
 
 import javax.crypto.spec.SecretKeySpec;
@@ -21,8 +27,6 @@ import java.util.Map;
 public class JWTUtil {
 
     private Key key;
-
-
 
     // 액세스 토큰 유효 시간 (예: 10분)
     @Value("${jwt.access-token.expire-length}")
@@ -59,6 +63,13 @@ public class JWTUtil {
         return createJwt(username, role, accessTokenValidityInSeconds);
     }
 
+
+
+    public String createAccessToken() {
+        return createJwt(accessTokenValidityInSeconds);
+    }
+
+
     public String createRefreshToken(String username) {
         return createJwt(username, null, refreshTokenValidityInSeconds);
     }
@@ -77,6 +88,18 @@ public class JWTUtil {
                 .signWith(key)
                 .compact();
     }
+
+    public String createJwt(int expiredSeconds) {
+        Map<String, Object> claims = new HashMap<>();
+        return Jwts.builder()
+                .setClaims(claims)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredSeconds))
+                .signWith(key)
+                .compact();
+    }
+
+
 
     public String getUsernameFromRefreshToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
@@ -98,5 +121,7 @@ public class JWTUtil {
             return false;
         }
     }
+
+
 
 }
