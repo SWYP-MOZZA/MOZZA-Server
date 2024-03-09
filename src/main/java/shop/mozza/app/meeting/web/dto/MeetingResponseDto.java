@@ -7,11 +7,11 @@ import java.util.List;
 public class MeetingResponseDto {
     @Setter
     @Getter
-    public static class notificationResponse{
+    public static class ResponseDto{
         private Integer StatusCode;
         private String responseMessage;
 
-        public notificationResponse(Integer statusCode, String responseMessage) {
+        public ResponseDto(Integer statusCode, String responseMessage) {
             this.responseMessage = responseMessage;
             this.StatusCode = statusCode;
         }
@@ -20,7 +20,8 @@ public class MeetingResponseDto {
 
     @Getter
     @Setter
-    public static class summaryResponse{
+    @Builder
+    public static class SummaryResponse{
         private Long meetingId;
         private String name;
         private String startDate;

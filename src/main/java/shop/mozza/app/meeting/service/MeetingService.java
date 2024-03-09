@@ -1,5 +1,7 @@
 package shop.mozza.app.meeting.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -7,19 +9,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import shop.mozza.app.login.jwt.token.JWTGuestTokenPublisher;
 import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
+import shop.mozza.app.exception.CustomExceptions;
+import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
+import shop.mozza.app.meeting.domain.Attendee;
 import shop.mozza.app.meeting.domain.DateTimeInfo;
 import shop.mozza.app.meeting.domain.Meeting;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
+import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 
 @Slf4j
@@ -32,6 +37,9 @@ public class MeetingService {
     private final DateTimeInfoRepository dateTimeInfoRepository;
     private final UserRepository userRepository;
     private final JWTTokenPublisher jwtTokenPublisher;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
 
@@ -73,12 +81,14 @@ public class MeetingService {
         return timeSlots;
     }
 
-    public void createMeeting(MeetingRequestDto.makeMeetingRequest req) {
+    public void createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
         Meeting meeting = Meeting
                 .builder()
                 .name(req.getName())
                 .isDeleted(false)
                 .onlyDate(req.getOnlyDate())
+                .creator(user)
+                .NumberOfVoter(0)
                 .build();
 
         meetingRepository.save(meeting);
@@ -159,6 +169,98 @@ public class MeetingService {
             meeting.updateNotificationSettings(null);
         }
         meetingRepository.save(meeting);
+    }
+
+    public Meeting findMeetingById(Long id) {
+        return meetingRepository.findById(id)
+                .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException("모임이 없습니다."));
+    }
+
+    private String findStartDate(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo earliestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isBefore(earliestDateTimeInfo.getDatetime())) {
+                earliestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return earliestDateTimeInfo.getDatetime().toLocalDate().toString();
+    }
+
+    private String findEndDate(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo latestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isAfter(latestDateTimeInfo.getDatetime())) {
+                latestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return latestDateTimeInfo.getDatetime().toLocalDate().toString();
+    }
+
+    private String findStartTime(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo earliestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isBefore(earliestDateTimeInfo.getDatetime())) {
+                earliestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return earliestDateTimeInfo.getDatetime().toLocalTime().toString();
+    }
+
+    private String findEndTime(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo latestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isAfter(latestDateTimeInfo.getDatetime())) {
+                latestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return latestDateTimeInfo.getDatetime().toLocalTime().toString();
+    }
+
+    private List<String> findAttendee(List<DateTimeInfo> dateTimeInfos) {
+        List<String> attendees = new ArrayList<>();
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            List<String> attendeesForDateTimeInfo = findAttendeesByDateTimeInfo(dateTimeInfo);
+            attendees.addAll(attendeesForDateTimeInfo);
+        }
+        return attendees;
+    }
+
+    private List<String> findAttendeesByDateTimeInfo(DateTimeInfo dateTimeInfo) {
+        List<String> attendeeNames = entityManager.createQuery(
+                        "SELECT a.user.name FROM Attendee a WHERE a.dateTimeInfo = :dateTimeInfo", String.class)
+                .setParameter("dateTimeInfo", dateTimeInfo)
+                .getResultList();
+        return attendeeNames;
+    }
+
+
+    public MeetingResponseDto.SummaryResponse createSummaryResponse(Meeting meeting) {
+        List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
+        MeetingResponseDto.SummaryResponse response = MeetingResponseDto.SummaryResponse
+                .builder()
+                .meetingId(meeting.getId())
+                .name(meeting.getName())
+                .startDate(findStartDate(dateTimeInfos))
+                .endDate(findEndDate(dateTimeInfos))
+                .startTime(findStartTime(dateTimeInfos))
+                .endTime(findEndTime(dateTimeInfos))
+                .numberOfVoter(meeting.getNumberOfVoter())
+                .attendee(findAttendee(dateTimeInfos))
+                .build();
+        return response;
+
     }
 }
 
