@@ -1,11 +1,14 @@
 package shop.mozza.app.meeting.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import shop.mozza.app.exception.CustomExceptions;
+import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
 import shop.mozza.app.meeting.domain.Attendee;
@@ -19,8 +22,7 @@ import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 
 @Slf4j
@@ -34,6 +36,9 @@ public class MeetingService {
     private final DateTimeInfoRepository dateTimeInfoRepository;
 
     private final UserRepository userRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     // String형의 "2023-10-22"를 LocalDateTime형의 2023-10-22T00:00로 리턴.
@@ -73,12 +78,14 @@ public class MeetingService {
         return timeSlots;
     }
 
-    public void createMeeting(MeetingRequestDto.makeMeetingRequest req) {
+    public void createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
         Meeting meeting = Meeting
                 .builder()
                 .name(req.getName())
                 .isDeleted(false)
                 .onlyDate(req.getOnlyDate())
+                .creator(user)
+                .NumberOfVoter(0)
                 .build();
 
         meetingRepository.save(meeting);
@@ -162,42 +169,91 @@ public class MeetingService {
                 .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException("모임이 없습니다."));
     }
 
-
-    public MeetingResponseDto.SummaryResponse createSummaryResponse(Meeting meeting) {
-        MeetingResponseDto.SummaryResponse response = new MeetingResponseDto.SummaryResponse();
-        response.setMeetingId(meeting.getId());
-        response.setName(meeting.getName());
-        response.setNumberOfVoter(meeting.getNumberOfVoter());
-
-        // Set start and end dates
-        List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
-        if (!dateTimeInfos.isEmpty()) {
-            DateTimeInfo earliestDateTimeInfo = dateTimeInfos.get(0);
-            DateTimeInfo latestDateTimeInfo = dateTimeInfos.get(0);
-            for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
-                if (dateTimeInfo.getDatetime().isBefore(earliestDateTimeInfo.getDatetime())) {
-                    earliestDateTimeInfo = dateTimeInfo;
-                }
-                if (dateTimeInfo.getDatetime().isAfter(latestDateTimeInfo.getDatetime())) {
-                    latestDateTimeInfo = dateTimeInfo;
-                }
-            }
-            response.setStartDate(earliestDateTimeInfo.getDatetime().toLocalDate().toString());
-            response.setEndDate(latestDateTimeInfo.getDatetime().toLocalDate().toString());
-            response.setStartTime(earliestDateTimeInfo.getDatetime().toLocalTime().toString());
-            response.setEndTime(latestDateTimeInfo.getDatetime().toLocalTime().toString());
+    private String findStartDate(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
         }
+        DateTimeInfo earliestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isBefore(earliestDateTimeInfo.getDatetime())) {
+                earliestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return earliestDateTimeInfo.getDatetime().toLocalDate().toString();
+    }
 
-        // Set attendees
+    private String findEndDate(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo latestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isAfter(latestDateTimeInfo.getDatetime())) {
+                latestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return latestDateTimeInfo.getDatetime().toLocalDate().toString();
+    }
+
+    private String findStartTime(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo earliestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isBefore(earliestDateTimeInfo.getDatetime())) {
+                earliestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return earliestDateTimeInfo.getDatetime().toLocalTime().toString();
+    }
+
+    private String findEndTime(List<DateTimeInfo> dateTimeInfos) {
+        if (dateTimeInfos.isEmpty()) {
+            return null;
+        }
+        DateTimeInfo latestDateTimeInfo = dateTimeInfos.get(0);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            if (dateTimeInfo.getDatetime().isAfter(latestDateTimeInfo.getDatetime())) {
+                latestDateTimeInfo = dateTimeInfo;
+            }
+        }
+        return latestDateTimeInfo.getDatetime().toLocalTime().toString();
+    }
+
+    private List<String> findAttendee(List<DateTimeInfo> dateTimeInfos) {
         List<String> attendees = new ArrayList<>();
         for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
-            for (Attendee attendee : dateTimeInfo.getAttendees()) {
-                attendees.add(attendee.getUser().getName());
-            }
+            List<String> attendeesForDateTimeInfo = findAttendeesByDateTimeInfo(dateTimeInfo);
+            attendees.addAll(attendeesForDateTimeInfo);
         }
-        response.setAttendee(attendees);
+        return attendees;
+    }
 
+    private List<String> findAttendeesByDateTimeInfo(DateTimeInfo dateTimeInfo) {
+        List<String> attendeeNames = entityManager.createQuery(
+                        "SELECT a.user.name FROM Attendee a WHERE a.dateTimeInfo = :dateTimeInfo", String.class)
+                .setParameter("dateTimeInfo", dateTimeInfo)
+                .getResultList();
+        return attendeeNames;
+    }
+
+
+    public MeetingResponseDto.SummaryResponse createSummaryResponse(Meeting meeting) {
+        List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
+        MeetingResponseDto.SummaryResponse response = MeetingResponseDto.SummaryResponse
+                .builder()
+                .meetingId(meeting.getId())
+                .name(meeting.getName())
+                .startDate(findStartDate(dateTimeInfos))
+                .endDate(findEndDate(dateTimeInfos))
+                .startTime(findStartTime(dateTimeInfos))
+                .endTime(findEndTime(dateTimeInfos))
+                .numberOfVoter(meeting.getNumberOfVoter())
+                .attendee(findAttendee(dateTimeInfos))
+                .build();
         return response;
+
     }
 }
 

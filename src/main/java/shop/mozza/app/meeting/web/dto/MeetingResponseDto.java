@@ -20,6 +20,7 @@ public class MeetingResponseDto {
 
     @Getter
     @Setter
+    @Builder
     public static class SummaryResponse{
         private Long meetingId;
         private String name;
