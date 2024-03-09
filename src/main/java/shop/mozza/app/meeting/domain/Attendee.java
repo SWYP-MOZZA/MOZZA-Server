@@ -16,7 +16,7 @@ public class Attendee  {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private DateTimeInfo dateTimeInfoId;
+    private DateTimeInfo dateTimeInfo;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private User user;
