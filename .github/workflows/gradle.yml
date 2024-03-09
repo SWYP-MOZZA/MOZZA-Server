@@ -10,7 +10,7 @@ on:
 # 해당 코드에서 사용될 변수 설정
 env:
   AWS_REGION: ap-northeast-2
-  PROJECT_NAME: imad-server
+  PROJECT_NAME: MOZZA-Server
   S3_BUCKET_NAME: mozza-server-data
   CODE_DEPLOY_APP_NAME: mozza-server-deploy
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: mozza-server-deploy-group
