@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Getter
-@Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseTimeEntity {
@@ -45,6 +44,11 @@ public class User extends BaseTimeEntity {
         this.name = name;
         this.isMember = isMember;
         this.role = role;
+    }
+
+
+    public void updateUserName(String name){
+        this.name = name;
     }
 
 

@@ -2,11 +2,16 @@ package shop.mozza.app.login.oauth2.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import shop.mozza.app.login.oauth2.dto.response.KakaoResponse;
 import shop.mozza.app.login.oauth2.dto.response.OAuth2Response;
 import shop.mozza.app.login.user.domain.KakaoOAuth2User;
@@ -41,31 +46,57 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String username = oAuth2Response.getName();
 
         User exitsUser = userRepository.findByName(username);
-
         if (exitsUser == null) {
-
             User newUser = User.builder()
                     .name(username)
                     .isMember(true)
                     .role("USER")
                     .build();
-
             userRepository.save(newUser);
-
-
             UserDto userDto = UserDto.from(newUser);
-
             return new KakaoOAuth2User(userDto);
         }
 
         else {
 
-            exitsUser.setName(oAuth2Response.getName());
-
+            exitsUser.updateUserName(oAuth2Response.getName());
             userRepository.save(exitsUser);
-
             UserDto userDTO = UserDto.from(exitsUser);
             return new KakaoOAuth2User(userDTO);
         }
     }
+
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "로그인 되지 않았습니다."
+            );
+        }
+
+        // Assuming the principal can be cast to a KakaoOAuth2User or similar that contains the username
+        Object principal = authentication.getPrincipal();
+        String username;
+
+        if (principal instanceof KakaoOAuth2User) { // Or any other implementation you use
+            username = ((KakaoOAuth2User) principal).getName();
+        } else if (principal instanceof String) {
+            username = (String) principal; // In case the principal is a String
+        } else {
+            throw new IllegalStateException("Unexpected principal type");
+        }
+
+        User user = userRepository.findByName(username); // Adjust this line to match your repository method
+
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
+
+//        if (user.getStatus().equals(UserStatus.INACTIVE)) {
+//            throw new IllegalArgumentException("해당 사용자는 탈퇴한 사용자입니다.");
+//        }
+        return user;
+    }
+
+
 }
