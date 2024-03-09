@@ -5,12 +5,20 @@ on:
   pull_request:
     branches: ["main"]
 
-    
-env: # 현재 스크립트에서 사용할 환경변수 정의
+
+
+# 해당 코드에서 사용될 변수 설정
+env:
+  AWS_REGION: ap-northeast-2
+  PROJECT_NAME: imad-server
   S3_BUCKET_NAME: mozza-server-data
-  CODE_DEPLOY_APPLICATION_NAME: mozza-server-deploy
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME : mozza-server-deploy-group
-  
+  CODE_DEPLOY_APP_NAME: mozza-server-deploy
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: mozza-server-deploy-group
+
+permissions:
+  contents: read
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,22 +52,35 @@ jobs:
         
       - name: Build with Gradle
         run: ./gradlew build -x test
-
-      - name: Make zip file
-        run: zip -r ./$GITHUB_SHA.zip .
         shell: bash
 
+
+      # AWS 인증 (IAM 사용자 Access Key, Secret Key 활용)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          
-      - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Code Deploy
-        run: aws deploy create-deployment --application-name $CODE_DEPLOY_APPLICATION_NAME --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name $CODE_DEPLOY_DEPLOYMENT_GROUP_NAME --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip
+      # 빌드 결과물을 S3 버킷에 업로드
+      - name: Upload to AWS S3
+        run: |
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APP_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source .
+                # S3 버킷에 있는 파일을 대상으로 CodeDeploy 실행
+          
+
+      - name: Deploy to AWS EC2 from S3
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODE_DEPLOY_APP_NAME }} \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
+
 
 
