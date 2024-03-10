@@ -15,4 +15,8 @@ public class ResponseMessage {
     public static final String GET_MEEITNG_FAILED = "모임이 존재하지 않습니다.";
     public static final String GET_MEEITNG_INFO_SUCCESS = "링크 접속 성공했습니다.";
 
+    public static final String Delete_MEEITNG_SUCCESS = "모임이 정상적으로 삭제되었습니다.";
+    public static final String Delete_MEEITNG_FAILED = "모임이 삭제되지 않았습니다.";
+
+
 }

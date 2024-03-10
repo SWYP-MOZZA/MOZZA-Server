@@ -53,5 +53,10 @@ public class Meeting {
         this.notification = notification;
     }
 
+    public void updateIsDelete(Boolean option) {
+
+        this.isDeleted = option;
+
+    }
 
 }

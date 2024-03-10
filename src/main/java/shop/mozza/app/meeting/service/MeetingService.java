@@ -282,6 +282,21 @@ public class MeetingService {
                 .build();
         return response;
     }
+
+
+    public Boolean deleteMeetingById(long meetingId) {
+        Optional<Meeting> meetingOptional = meetingRepository.findById(meetingId);
+        if (meetingOptional.isPresent()) {
+            Meeting meeting = meetingOptional.get();
+            meeting.updateIsDelete(true); // 상태 업데이트
+            meetingRepository.save(meeting); // 변경 사항 저장
+            return true;
+        } else {
+            // Optional 객체가 비어 있으면 예외 처리 또는 다른 로직 실행
+            return false; // 또는 적절한 예외를 던질 수 있습니다.
+        }
+
+    }
 }
 
 

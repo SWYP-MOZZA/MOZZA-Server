@@ -31,4 +31,11 @@ public class MeetingRequestDto {
         private Boolean ableNotification;
         private Integer numberOfVoter;
     }
+
+
+    @Getter
+    @Setter
+    public static class deleteRequest {
+        private int id;
+    }
 }

@@ -138,4 +138,30 @@ public class MeetingController extends BaseController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
+
+
+    @PostMapping("meeting/delete")
+    public ResponseEntity<?> deleteMeeting(@RequestBody MeetingRequestDto.deleteRequest deleteRequest) {
+        try {
+            Boolean result = meetingService.deleteMeetingById(deleteRequest.getId());
+            if (result) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("StatusCode", 200);
+                response.put("ResponseMessage", ResponseMessage.Delete_MEEITNG_SUCCESS);
+                return ResponseEntity.ok(response);
+            }
+            else {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("StatusCode", 400);
+                errorResponse.put("ResponseMessage", ResponseMessage.Delete_MEEITNG_FAILED);
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("StatusCode", 400);
+            errorResponse.put("ResponseMessage", ResponseMessage.Delete_MEEITNG_FAILED);
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
 }
