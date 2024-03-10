@@ -303,16 +303,20 @@ public class MeetingService {
     public MeetingResponseDto.MeetingDetailsResponse getMeetingDetails(Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
 
-
-        Map<LocalDate, List<DateTimeInfo>> groupedByDate = dateTimeInfos.stream()
-                .collect(Collectors.groupingBy(dateTimeInfo -> dateTimeInfo.getDatetime().toLocalDate()));
+        Map<LocalDate, List<MeetingResponseDto.DateTimeInfoDto>> groupedByDate = dateTimeInfos.stream()
+                .map(dateTimeInfo -> MeetingResponseDto.DateTimeInfoDto.builder()
+                        .id(dateTimeInfo.getId())
+                        .datetime(dateTimeInfo.getDatetime())
+                        // 필요한 다른 필드를 매핑합니다.
+                        .build())
+                .collect(Collectors.groupingBy(dateTimeInfoDto -> dateTimeInfoDto.getDatetime().toLocalDate()));
 
         List<MeetingResponseDto.MeetingDetailsData> detailsDataList = groupedByDate.entrySet().stream()
                 .map(entry -> MeetingResponseDto.MeetingDetailsData.builder()
                         .localDate(entry.getKey())
-                        .dateTimeInfos(entry.getValue())
+                        .dateTimeInfos(entry.getValue()) // 이제 여기는 List<DateTimeInfoDto>입니다.
                         .build())
-                .toList();
+                .collect(Collectors.toList());
 
 
         // todo confirm 만들어야함

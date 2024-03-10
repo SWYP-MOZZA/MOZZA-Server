@@ -183,7 +183,6 @@ public class MeetingController extends BaseController {
             response.put("Data", detailsResponse);
             return ResponseEntity.ok(response);
 
-
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("StatusCode", 400);

@@ -67,7 +67,14 @@ public class MeetingResponseDto {
     @Builder
     public static class  MeetingDetailsData{
         private LocalDate localDate;
-        private List<DateTimeInfo> dateTimeInfos;
+        private List<DateTimeInfoDto> dateTimeInfos;
     }
 
+    @Getter
+    @Setter
+    @Builder
+    public static class DateTimeInfoDto {
+        private Long id;
+        private LocalDateTime datetime;
+    }
 }
