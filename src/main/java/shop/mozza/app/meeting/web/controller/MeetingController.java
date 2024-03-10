@@ -166,7 +166,7 @@ public class MeetingController extends BaseController {
 
 
     // 모임정보 - Details
-    @GetMapping("/meeting/${meetingId}/details")
+    @GetMapping("/meeting/{meetingId}/details")
     public ResponseEntity<?> getMeetingDetails(@PathVariable Long meetingId) {
         try {
             Meeting meeting = meetingService.findMeetingById(meetingId);
@@ -180,7 +180,7 @@ public class MeetingController extends BaseController {
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
-            response.put("Data", choiceResponse);
+            response.put("Data", detailsResponse);
             return ResponseEntity.ok(response);
 
 

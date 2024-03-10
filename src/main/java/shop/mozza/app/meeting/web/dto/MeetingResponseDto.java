@@ -59,6 +59,15 @@ public class MeetingResponseDto {
         private LocalDate confirmedDate;
         private Meeting.ConfirmedTime confirmedTime;
         private List<String> confirmedAttendee;
-        private Map<String, List<DateTimeInfo>> data;
+        private List<MeetingDetailsData> data;
     }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class  MeetingDetailsData{
+        private LocalDate localDate;
+        private List<DateTimeInfo> dateTimeInfos;
+    }
+
 }

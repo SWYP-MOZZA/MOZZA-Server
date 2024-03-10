@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -298,19 +299,31 @@ public class MeetingService {
 
     }
 
+
     public MeetingResponseDto.MeetingDetailsResponse getMeetingDetails(Meeting meeting) {
+        List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
 
 
-        // TO DO confirmed 데이터 수정해야 함
-        MeetingResponseDto.MeetingDetailsResponse.builder()
+        Map<LocalDate, List<DateTimeInfo>> groupedByDate = dateTimeInfos.stream()
+                .collect(Collectors.groupingBy(dateTimeInfo -> dateTimeInfo.getDatetime().toLocalDate()));
 
+        List<MeetingResponseDto.MeetingDetailsData> detailsDataList = groupedByDate.entrySet().stream()
+                .map(entry -> MeetingResponseDto.MeetingDetailsData.builder()
+                        .localDate(entry.getKey())
+                        .dateTimeInfos(entry.getValue())
+                        .build())
+                .toList();
+
+
+        // todo confirm 만들어야함
+        return MeetingResponseDto.MeetingDetailsResponse.builder()
                 .meetingId(meeting.getId())
                 .createdAt(meeting.getCreatedAt())
                 .numberOfSubmit(meeting.getNumberOfVoter())
                 .confirmedDate(meeting.getConfirmedDate())
                 .confirmedTime(meeting.getConfirmedTime())
-//                .confirmedAttendee()
-                .data()
+                .confirmedAttendee(Arrays.asList("홍길동", "김철수", "이영희")) // 예시 데이터
+                .data(detailsDataList)
                 .build();
     }
 }

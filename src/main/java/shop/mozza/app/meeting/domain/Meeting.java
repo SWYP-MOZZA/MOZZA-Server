@@ -50,6 +50,7 @@ public class Meeting extends BaseTimeEntity {
     private Integer NumberOfVoter;
 
 
+
     @Embedded
     private ConfirmedTime confirmedTime;
 
