@@ -44,8 +44,13 @@ public class MeetingService {
 
 
     // String형의 "2023-10-22"를 LocalDateTime형의 2023-10-22T00:00로 리턴.
-    private LocalDateTime stringToDateOnly(String dateString) {
-        LocalDateTime localDate = LocalDateTime.parse(dateString);
+    private LocalDateTime stringToDateTimeOnly(String dateString) {
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString);
+        return localDateTime;
+    }
+
+    private LocalDate stringToDateOnly(String dateString) {
+        LocalDate localDate = LocalDate.parse(dateString);
         return localDate;
     }
 
@@ -72,6 +77,14 @@ public class MeetingService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         // LocalDateTime 객체를 날짜 부분만 나타내는 문자열로 변환
         String dateString = dateTime.format(formatter);
+        return dateString;
+    }
+
+    public static String getDateStringFromLocalDate(LocalDate date) {
+        // 날짜를 나타내는 포맷 지정 (yyyy-MM-dd)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // LocalDate 객체를 날짜 부분만 나타내는 문자열로 변환
+        String dateString = date.format(formatter);
         return dateString;
     }
 
@@ -114,7 +127,7 @@ public class MeetingService {
         for (String date : dates) {
             DateTimeInfo dti = DateTimeInfo
                     .builder()
-                    .datetime(stringToDateOnly(date))
+                    .date(stringToDateOnly(date))
                     .meeting(meeting)
                     .build();
             dateTimeInfoRepository.save(dti);
@@ -305,7 +318,7 @@ public class MeetingService {
                 boolean isActive = dateRequest.getIsActive();
                 Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
                         .stream()
-                        .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
+                        .filter(dateTimeInfo -> getDateStringFromLocalDate(dateTimeInfo.getDate()).equals(date))
                         .findFirst();
 
                 if (optionalDateTimeInfo.isPresent() && isActive) {
@@ -327,41 +340,47 @@ public class MeetingService {
         return dateTime.format(formatter);
     }
 
-    public void submitMeetingDateTime(User user, Long id, List<MeetingRequestDto.DateTimeSubmitRequest> dateTimeRequests) {
+
+
+    public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
             Meeting meeting = optionalMeeting.get();
 
-            for (MeetingRequestDto.DateTimeSubmitRequest dateTimeRequest : dateTimeRequests) {
-                String date = dateTimeRequest.getDate();
-                List<MeetingRequestDto.DateTimeSubmitRequest.TimeSlot> timeSlots = dateTimeRequest.getTime();
+            // 날짜별로 순회
+            for (Map.Entry<String, List<MeetingRequestDto.TimeSlot>> entry : dateTimeRequests.entrySet()) {
+                String date = entry.getKey();
+                List<MeetingRequestDto.TimeSlot> timeSlots = entry.getValue();
 
-                Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
-                        .stream()
-                        .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
-                        .findFirst();
+                // 시간 슬롯별로 순회
+                for (MeetingRequestDto.TimeSlot timeSlot : timeSlots) {
+                    String time = timeSlot.getTime();
+                    boolean isActive = timeSlot.getIsActive();
 
-                if (optionalDateTimeInfo.isPresent()) {
-                    DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+                    LocalDateTime dateTime = LocalDateTime.parse(date + "T" + time);
 
-                    for (MeetingRequestDto.DateTimeSubmitRequest.TimeSlot timeSlot : timeSlots) {
-                        String time = timeSlot.getTime();
-                        boolean isActive = timeSlot.getIsActive();
+                    // 날짜와 시간이 일치하는 DateTimeInfo 찾기
+                    Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
+                            .stream()
+                            .filter(dateTimeInfo -> dateTimeInfo.getDatetime().equals(dateTime))
+                            .findFirst();
 
-                        String dateTime = getDateTimeStringFromLocalDateTime(dateTimeInfo.getDatetime());
-                        if (dateTime.equals(date + "T" + time) && isActive) {
-                            Attendee attendee = Attendee
-                                    .builder()
-                                    .dateTimeInfo(dateTimeInfo)
-                                    .user(user)
-                                    .build();
-                            attendeeRepository.save(attendee);
-                        }
+                    if (optionalDateTimeInfo.isPresent() && isActive) {
+                        DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+
+                        Attendee attendee = Attendee.builder()
+                                .dateTimeInfo(dateTimeInfo)
+                                .user(user)
+                                .build();
+                        attendeeRepository.save(attendee);
                     }
                 }
             }
+        } else {
+            // 미팅이 존재하지 않을 경우의 처리 (예외 던지기 또는 로깅)
         }
     }
+
 }
 
 

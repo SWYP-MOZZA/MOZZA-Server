@@ -41,15 +41,8 @@ public class MeetingRequestDto {
 
     @Getter
     @Setter
-    public static class DateTimeSubmitRequest{
-        private String date;
-        private List<TimeSlot> time;
-
-        @Setter
-        @Getter
-        public class TimeSlot{
-            private String time;
-            private Boolean isActive;
-        }
+    public static class TimeSlot {
+        private String time;
+        private Boolean isActive;
     }
 }

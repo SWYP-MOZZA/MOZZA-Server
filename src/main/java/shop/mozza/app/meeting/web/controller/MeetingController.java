@@ -135,7 +135,7 @@ public class MeetingController extends BaseController {
     }
 
     @PostMapping("/meeting/{id}/submit")
-    public ResponseEntity<?> submitMeetingDateTime(@PathVariable Long id, @RequestBody List<MeetingRequestDto.DateTimeSubmitRequest> dateTimeRequests) {
+    public ResponseEntity<?> submitMeetingDateTime(@PathVariable Long id, @RequestBody Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         try {
             User user = userService.getCurrentUser();
             meetingService.submitMeetingDateTime(user,id, dateTimeRequests);
