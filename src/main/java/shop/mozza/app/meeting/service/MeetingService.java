@@ -7,15 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import shop.mozza.app.login.jwt.token.JWTGuestTokenPublisher;
 import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
-import shop.mozza.app.exception.CustomExceptions;
-import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
 import shop.mozza.app.meeting.domain.Attendee;
 import shop.mozza.app.meeting.domain.DateTimeInfo;
 import shop.mozza.app.meeting.domain.Meeting;
+import shop.mozza.app.meeting.repository.AttendeeRepository;
 import shop.mozza.app.meeting.repository.DateTimeInfoRepository;
 import shop.mozza.app.meeting.repository.MeetingRepository;
 import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
@@ -24,6 +22,7 @@ import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -38,13 +37,20 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final JWTTokenPublisher jwtTokenPublisher;
 
+    private final AttendeeRepository attendeeRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
 
     // String형의 "2023-10-22"를 LocalDateTime형의 2023-10-22T00:00로 리턴.
-    private LocalDateTime stringToDateOnly(String dateString) {
-        LocalDateTime localDate = LocalDateTime.parse(dateString);
+    private LocalDateTime stringToDateTimeOnly(String dateString) {
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString);
+        return localDateTime;
+    }
+
+    private LocalDate stringToDateOnly(String dateString) {
+        LocalDate localDate = LocalDate.parse(dateString);
         return localDate;
     }
 
@@ -63,6 +69,23 @@ public class MeetingService {
             dateTimeList.add(dateTime);
         }
         return dateTimeList;
+    }
+
+    // LocalDateTime yyyy-mm-ddThh:mm이 주어지면 String형의 "yyyy-mm-dd"만 return
+    public static String getDateStringFromLocalDateTime(LocalDateTime dateTime) {
+        // 날짜를 나타내는 포맷 지정 (yyyy-MM-dd)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // LocalDateTime 객체를 날짜 부분만 나타내는 문자열로 변환
+        String dateString = dateTime.format(formatter);
+        return dateString;
+    }
+
+    public static String getDateStringFromLocalDate(LocalDate date) {
+        // 날짜를 나타내는 포맷 지정 (yyyy-MM-dd)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // LocalDate 객체를 날짜 부분만 나타내는 문자열로 변환
+        String dateString = date.format(formatter);
+        return dateString;
     }
 
     private List<String> generateTimeSlots(String startTime, String endTime) {
@@ -104,7 +127,7 @@ public class MeetingService {
         for (String date : dates) {
             DateTimeInfo dti = DateTimeInfo
                     .builder()
-                    .datetime(stringToDateOnly(date))
+                    .date(stringToDateOnly(date))
                     .meeting(meeting)
                     .build();
             dateTimeInfoRepository.save(dti);
@@ -270,6 +293,7 @@ public class MeetingService {
         }
         return new ArrayList<>(dateSet);
     }
+
     public MeetingResponseDto.ChoiceResponse createChoiceResponse(Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
         MeetingResponseDto.ChoiceResponse response = MeetingResponseDto.ChoiceResponse
@@ -282,6 +306,81 @@ public class MeetingService {
                 .build();
         return response;
     }
+
+
+    public void submitMeetingDate(User user, Long id, List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
+        if (optionalMeeting.isPresent()) {
+            Meeting meeting = optionalMeeting.get();
+
+            for (MeetingRequestDto.DateSubmitRequest dateRequest : dateRequests) {
+                String date = dateRequest.getDate();
+                boolean isActive = dateRequest.getIsActive();
+                Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
+                        .stream()
+                        .filter(dateTimeInfo -> getDateStringFromLocalDate(dateTimeInfo.getDate()).equals(date))
+                        .findFirst();
+
+                if (optionalDateTimeInfo.isPresent() && isActive) {
+                    DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+
+                    Attendee attendee = Attendee
+                            .builder()
+                            .dateTimeInfo(dateTimeInfo)
+                            .user(user)
+                            .build();
+                    attendeeRepository.save(attendee);
+                }
+            }
+        }
+    }
+
+    private String getDateTimeStringFromLocalDateTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        return dateTime.format(formatter);
+    }
+
+
+
+    public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
+        if (optionalMeeting.isPresent()) {
+            Meeting meeting = optionalMeeting.get();
+
+            // 날짜별로 순회
+            for (Map.Entry<String, List<MeetingRequestDto.TimeSlot>> entry : dateTimeRequests.entrySet()) {
+                String date = entry.getKey();
+                List<MeetingRequestDto.TimeSlot> timeSlots = entry.getValue();
+
+                // 시간 슬롯별로 순회
+                for (MeetingRequestDto.TimeSlot timeSlot : timeSlots) {
+                    String time = timeSlot.getTime();
+                    boolean isActive = timeSlot.getIsActive();
+
+                    LocalDateTime dateTime = LocalDateTime.parse(date + "T" + time);
+
+                    // 날짜와 시간이 일치하는 DateTimeInfo 찾기
+                    Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
+                            .stream()
+                            .filter(dateTimeInfo -> dateTimeInfo.getDatetime().equals(dateTime))
+                            .findFirst();
+
+                    if (optionalDateTimeInfo.isPresent() && isActive) {
+                        DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+
+                        Attendee attendee = Attendee.builder()
+                                .dateTimeInfo(dateTimeInfo)
+                                .user(user)
+                                .build();
+                        attendeeRepository.save(attendee);
+                    }
+                }
+            }
+        } else {
+            // 미팅이 존재하지 않을 경우의 처리 (예외 던지기 또는 로깅)
+        }
+    }
+
 }
 
 

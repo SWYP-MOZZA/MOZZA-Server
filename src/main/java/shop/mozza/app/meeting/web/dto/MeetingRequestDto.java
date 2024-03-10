@@ -31,4 +31,18 @@ public class MeetingRequestDto {
         private Boolean ableNotification;
         private Integer numberOfVoter;
     }
+
+    @Getter
+    @Setter
+    public static class DateSubmitRequest{
+        private String date;
+        private Boolean isActive;
+    }
+
+    @Getter
+    @Setter
+    public static class TimeSlot {
+        private String time;
+        private Boolean isActive;
+    }
 }

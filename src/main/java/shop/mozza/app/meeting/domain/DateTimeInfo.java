@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -21,6 +22,9 @@ public class DateTimeInfo {
 
     @Column
     private LocalDateTime datetime;
+
+    @Column
+    private LocalDate date;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Meeting meeting;
