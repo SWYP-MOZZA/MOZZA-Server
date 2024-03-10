@@ -10,10 +10,10 @@ public class MeetingResponseDto {
     @Getter
     public static class ResponseDto{
         private Integer StatusCode;
-        private String responseMessage;
+        private String ResponseMessage;
 
         public ResponseDto(Integer statusCode, String responseMessage) {
-            this.responseMessage = responseMessage;
+            this.ResponseMessage = responseMessage;
             this.StatusCode = statusCode;
         }
     }
@@ -43,6 +43,8 @@ public class MeetingResponseDto {
         private String startTime;
         private String endTime;
     }
+
+
 
 
 }

@@ -14,5 +14,8 @@ public class ResponseMessage {
     public static final String GET_MEEITNG_INFO_FAILED = "링크 접속에 실패했습니다.";
     public static final String GET_MEEITNG_FAILED = "모임이 존재하지 않습니다.";
     public static final String GET_MEEITNG_INFO_SUCCESS = "링크 접속 성공했습니다.";
+    public static final String SUBMIT_SCHEDULE_SUCCESS = "희망 일정 선택을 완료했습니다.";
+    public static final String SUBMIT_SCHEDULE_FAILED = "희망 일정 선택에 실패했습니다.";
+
 
 }

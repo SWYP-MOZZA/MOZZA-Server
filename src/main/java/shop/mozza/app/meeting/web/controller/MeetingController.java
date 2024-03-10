@@ -15,6 +15,7 @@ import shop.mozza.app.meeting.web.dto.MeetingRequestDto;
 import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -42,10 +43,7 @@ public class MeetingController extends BaseController {
             response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("StatusCode", 400);
-            errorResponse.put("ResponseMessage", ResponseMessage.MAKE_MEETING_FAILED);
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED));
         }
     }
 
@@ -63,10 +61,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("StatusCode", 400);
-            errorResponse.put("ResponseMessage", ResponseMessage.GUEST_LOGIN_FAILED);
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED));
         }
     }
 
@@ -92,10 +87,7 @@ public class MeetingController extends BaseController {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("StatusCode", 404);
-                errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_FAILED);
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
             MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting);
             Map<String, Object> response = new HashMap<>();
@@ -105,10 +97,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("StatusCode", 400);
-            errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_FAILED);
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED));
         }
     }
 
@@ -118,10 +107,7 @@ public class MeetingController extends BaseController {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("StatusCode", 404);
-                errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_FAILED);
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
             MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting);
             Map<String, Object> response = new HashMap<>();
@@ -132,10 +118,23 @@ public class MeetingController extends BaseController {
 
 
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("StatusCode", 400);
-            errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_FAILED);
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED));
         }
     }
+
+    @PostMapping("/meeting/{id}/date/submit")
+    public ResponseEntity<?> submitMeetingDate(@PathVariable Long id, @RequestBody List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
+        try {
+            User user = userService.getCurrentUser();
+            meetingService.submitMeetingDate(user,id, dateRequests);
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
+        }
+        catch (Exception e){
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
+        }
+    }
+
+
+
+
 }
