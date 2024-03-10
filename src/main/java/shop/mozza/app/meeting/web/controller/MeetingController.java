@@ -134,6 +134,18 @@ public class MeetingController extends BaseController {
         }
     }
 
+    @PostMapping("/meeting/{id}/submit")
+    public ResponseEntity<?> submitMeetingDateTime(@PathVariable Long id, @RequestBody List<MeetingRequestDto.DateTimeSubmitRequest> dateTimeRequests) {
+        try {
+            User user = userService.getCurrentUser();
+            meetingService.submitMeetingDateTime(user,id, dateTimeRequests);
+            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
+        }
+    }
+
 
 
 

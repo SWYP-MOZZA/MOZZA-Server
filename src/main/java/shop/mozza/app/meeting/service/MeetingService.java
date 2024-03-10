@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import shop.mozza.app.login.jwt.token.JWTGuestTokenPublisher;
 import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
-import shop.mozza.app.exception.CustomExceptions;
-import shop.mozza.app.login.oauth2.service.OAuth2UserService;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
 import shop.mozza.app.meeting.domain.Attendee;
@@ -283,6 +280,7 @@ public class MeetingService {
         }
         return new ArrayList<>(dateSet);
     }
+
     public MeetingResponseDto.ChoiceResponse createChoiceResponse(Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = meeting.getDateTimeInfos();
         MeetingResponseDto.ChoiceResponse response = MeetingResponseDto.ChoiceResponse
@@ -297,14 +295,14 @@ public class MeetingService {
     }
 
 
-    public void submitMeetingDate(User user,Long id, List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
+    public void submitMeetingDate(User user, Long id, List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
             Meeting meeting = optionalMeeting.get();
 
             for (MeetingRequestDto.DateSubmitRequest dateRequest : dateRequests) {
                 String date = dateRequest.getDate();
-                boolean isActive = dateRequest.isActive();
+                boolean isActive = dateRequest.getIsActive();
                 Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
                         .stream()
                         .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
@@ -319,6 +317,47 @@ public class MeetingService {
                             .user(user)
                             .build();
                     attendeeRepository.save(attendee);
+                }
+            }
+        }
+    }
+
+    private String getDateTimeStringFromLocalDateTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        return dateTime.format(formatter);
+    }
+
+    public void submitMeetingDateTime(User user, Long id, List<MeetingRequestDto.DateTimeSubmitRequest> dateTimeRequests) {
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
+        if (optionalMeeting.isPresent()) {
+            Meeting meeting = optionalMeeting.get();
+
+            for (MeetingRequestDto.DateTimeSubmitRequest dateTimeRequest : dateTimeRequests) {
+                String date = dateTimeRequest.getDate();
+                List<MeetingRequestDto.DateTimeSubmitRequest.TimeSlot> timeSlots = dateTimeRequest.getTime();
+
+                Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
+                        .stream()
+                        .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
+                        .findFirst();
+
+                if (optionalDateTimeInfo.isPresent()) {
+                    DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+
+                    for (MeetingRequestDto.DateTimeSubmitRequest.TimeSlot timeSlot : timeSlots) {
+                        String time = timeSlot.getTime();
+                        boolean isActive = timeSlot.getIsActive();
+
+                        String dateTime = getDateTimeStringFromLocalDateTime(dateTimeInfo.getDatetime());
+                        if (dateTime.equals(date + "T" + time) && isActive) {
+                            Attendee attendee = Attendee
+                                    .builder()
+                                    .dateTimeInfo(dateTimeInfo)
+                                    .user(user)
+                                    .build();
+                            attendeeRepository.save(attendee);
+                        }
+                    }
                 }
             }
         }
