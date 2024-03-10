@@ -19,7 +19,7 @@ public class KakaoUserInfo {
     public KakaoUserInfoResponse getUserInfo(String token) {
         String baseUrl = USER_INFO_URI;
 
-        String queryParameters = "property_keys=[\"kakao_account.profile\"]";
+        String queryParameters = "property_keys=[\"kakao_account.profile\", \"kakao_account.email\"]";
         String urlString = baseUrl + "?" + queryParameters;
 
         Flux<KakaoUserInfoResponse> response = webClient.get()

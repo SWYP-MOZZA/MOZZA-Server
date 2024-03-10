@@ -59,7 +59,7 @@ public class KakaoController {
         log.info("토큰에 대한 정보입니다.{}",kakaoTokenResponse);
         KakaoUserInfoResponse userInfo = kakaoUserInfo.getUserInfo(kakaoTokenResponse.getAccess_token());
         log.info("회원 정보 입니다.{}",userInfo);
-        User user = userService.createUser(userInfo.getKakao_account().getProfile().getNickname());
+        User user = userService.createUser(userInfo);
         OAuth2LoginResponse response = userService.getLoginReponse(user);
         return ResponseEntity.ok(response);
     }

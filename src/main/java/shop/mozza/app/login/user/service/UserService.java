@@ -33,19 +33,24 @@ public class UserService {
     private final RefreshTokenService refreshTokenService;
 
 
-    public User createUser (String username) {
+    public User createUser (KakaoUserInfoResponse userInfo) {
+        String username = userInfo.getKakao_account().getProfile().getNickname();
+        String userEmail = userInfo.getKakao_account().getEmail();
         User exitsUser = userRepository.findByName(username);
         if (exitsUser == null) {
             User newUser = User.builder()
                     .name(username)
                     .isMember(true)
                     .role("USER")
+                    .email(userEmail)
                     .build();
+
             userRepository.save(newUser);
             return newUser;
         }
         else {
             exitsUser.updateUserName(username);
+            exitsUser.updateUserEmail(userEmail);
             userRepository.save(exitsUser);
             return exitsUser;
         }
