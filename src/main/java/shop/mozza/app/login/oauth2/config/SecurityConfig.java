@@ -93,11 +93,14 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/guest").permitAll()
-                        .requestMatchers("/meeting/create").permitAll()
-                        .requestMatchers("/oauth").permitAll()
-                        .anyRequest().authenticated());
+                        .anyRequest().permitAll()
+//                        .requestMatchers("/**").permitAll()
+//                        .requestMatchers("/guest").permitAll()
+//                        .requestMatchers("/meeting/create").permitAll()
+//                        .requestMatchers("/meeting/{}/short").permitAll()
+//                        .requestMatchers("/oauth").permitAll()
+//                        .anyRequest().authenticated()
+                );
 
         //세션 설정 : STATELESS
         http
