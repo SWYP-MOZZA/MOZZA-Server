@@ -18,5 +18,8 @@ public class ResponseMessage {
     public static final String Delete_MEEITNG_SUCCESS = "모임이 정상적으로 삭제되었습니다.";
     public static final String Delete_MEEITNG_FAILED = "모임이 삭제되지 않았습니다.";
 
+    public static final String GET_MEEITNG_DETAILS_SUCCESS = "자세한 모임 일정 불러오기 완료";
+    public static final String GET_MEEITNG_DETAILS_FAILED = "자세한 모임 일정 불러오기 실패";
+
 
 }

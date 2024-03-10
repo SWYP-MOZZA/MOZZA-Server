@@ -2,10 +2,14 @@ package shop.mozza.app.meeting.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.ArrayList;
 import shop.mozza.app.login.user.domain.User;
+import shop.mozza.app.util.BaseTimeEntity;
 
 
 @Entity
@@ -13,7 +17,7 @@ import shop.mozza.app.login.user.domain.User;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Meeting {
+public class Meeting extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +37,7 @@ public class Meeting {
 
     //모임의 확정된 날짜/시간으로, null일 경우 not confirmed 모임이다.
     @Column
-    private LocalDateTime ConfirmedDateTime;
+    private LocalDate ConfirmedDate;
 
     // 원하는 인원만큼 가능한 모임 시간을 제출하면 알림을 보내준다. null일 경우 알림을 보내지 않는다.
     @Column
@@ -44,6 +48,12 @@ public class Meeting {
 
     @Column
     private Integer NumberOfVoter;
+
+
+    @Embedded
+    private ConfirmedTime confirmedTime;
+
+
 
     @Builder.Default
     @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -59,4 +69,17 @@ public class Meeting {
 
     }
 
+    @Embeddable
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ConfirmedTime {
+        private LocalTime startTime;
+        private LocalTime endTime;
+    }
+
+
 }
+
+

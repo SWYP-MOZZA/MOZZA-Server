@@ -164,4 +164,32 @@ public class MeetingController extends BaseController {
         }
     }
 
+
+    // 모임정보 - Details
+    @GetMapping("/meeting/${meetingId}/details")
+    public ResponseEntity<?> getMeetingDetails(@PathVariable Long meetingId) {
+        try {
+            Meeting meeting = meetingService.findMeetingById(meetingId);
+            if (meeting == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("StatusCode", 404);
+                errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_DETAILS_FAILED);
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            MeetingResponseDto.MeetingDetailsResponse detailsResponse = meetingService.getMeetingDetails(meeting);
+            Map<String, Object> response = new HashMap<>();
+            response.put("StatusCode", 200);
+            response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
+            response.put("Data", choiceResponse);
+            return ResponseEntity.ok(response);
+
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("StatusCode", 400);
+            errorResponse.put("ResponseMessage", ResponseMessage.GET_MEEITNG_DETAILS_FAILED);
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
 }

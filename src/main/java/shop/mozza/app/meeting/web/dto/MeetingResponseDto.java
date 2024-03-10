@@ -2,8 +2,13 @@ package shop.mozza.app.meeting.web.dto;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
+import shop.mozza.app.meeting.domain.DateTimeInfo;
+import shop.mozza.app.meeting.domain.Meeting;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class MeetingResponseDto {
     @Setter
@@ -44,5 +49,16 @@ public class MeetingResponseDto {
         private String endTime;
     }
 
-
+    @Getter
+    @Setter
+    @Builder
+    public static class MeetingDetailsResponse {
+        private Long meetingId;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private LocalDate confirmedDate;
+        private Meeting.ConfirmedTime confirmedTime;
+        private List<String> confirmedAttendee;
+        private Map<String, List<DateTimeInfo>> data;
+    }
 }

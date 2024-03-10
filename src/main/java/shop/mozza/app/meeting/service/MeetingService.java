@@ -297,6 +297,22 @@ public class MeetingService {
         }
 
     }
+
+    public MeetingResponseDto.MeetingDetailsResponse getMeetingDetails(Meeting meeting) {
+
+
+        // TO DO confirmed 데이터 수정해야 함
+        MeetingResponseDto.MeetingDetailsResponse.builder()
+
+                .meetingId(meeting.getId())
+                .createdAt(meeting.getCreatedAt())
+                .numberOfSubmit(meeting.getNumberOfVoter())
+                .confirmedDate(meeting.getConfirmedDate())
+                .confirmedTime(meeting.getConfirmedTime())
+//                .confirmedAttendee()
+                .data()
+                .build();
+    }
 }
 
 
