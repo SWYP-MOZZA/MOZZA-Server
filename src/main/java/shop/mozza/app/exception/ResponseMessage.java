@@ -18,4 +18,8 @@ public class ResponseMessage {
     public static final String SUBMIT_SCHEDULE_FAILED = "희망 일정 선택에 실패했습니다.";
 
 
+    public static final String LOGOUT_SUCCESS = "로그아웃 성공";
+    public static final String LOGOUT_FAILED = "로그아웃 실패";
+
+
 }

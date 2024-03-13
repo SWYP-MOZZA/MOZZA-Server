@@ -10,12 +10,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import shop.mozza.app.exception.CustomExceptions;
-import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.global.TokenService;
 import shop.mozza.app.login.jwt.JWTUtil;
 import shop.mozza.app.login.oauth2.dto.response.KakaoTokenResponse;
 import shop.mozza.app.login.oauth2.dto.response.KakaoUserInfoResponse;
@@ -39,15 +36,11 @@ public class KakaoController {
     private final JWTUtil jwtUtil;
 
     private final UserRepository userRepository;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
     @Value("${jwt.access-token.expire-length}")
     private int accessTokenValidityInSeconds;
 
-    @GetMapping("/index")
-    public String index() {
-        return "loginForm";
-    }
 
     @Description("회원이 소셜 로그인을 마치면 자동으로 실행되는 API입니다. 인가 코드를 이용해 토큰을 받고, 해당 토큰으로 사용자 정보를 조회합니다." +
             "사용자 정보를 이용하여 서비스에 회원가입합니다.")
@@ -84,10 +77,15 @@ public class KakaoController {
             refreshToken = refreshToken.replace("Bearer ", "");
         }
 
+        // 블랙리스트 토큰인 경우
+        if (tokenService.isTokenBlacklisted(authorization)) {
+            throw new CustomExceptions.RefreshTokenException("JWT: 로그아웃 처리된 토큰");
+        }
+
         String newAccessToken = null;
         // Refresh Token을 사용하여 AccessToken을 갱신
         String username = jwtUtil.getUsername(refreshToken);
-        if (!StringUtils.isEmpty(refreshToken) && refreshTokenService.validateRefreshToken(username, refreshToken)) {
+        if (!StringUtils.isEmpty(refreshToken) && tokenService.validateRefreshToken(username, refreshToken)) {
             User user = userRepository.findByName(username);
             if (user != null) {
                 // 새 액세스 토큰 발급
@@ -119,6 +117,10 @@ public class KakaoController {
             throw new CustomExceptions.RefreshTokenException("Access 토큰 재발급 실패");
         }
     }
+
+
+
+
 
 
 
