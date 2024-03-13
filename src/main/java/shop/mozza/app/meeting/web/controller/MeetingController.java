@@ -43,7 +43,7 @@ public class MeetingController extends BaseController {
             response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED, e.getMessage() ));
         }
     }
 
@@ -61,7 +61,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED));
+            return ResponseEntity.ok(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED, e.getMessage()));
         }
     }
 
@@ -76,7 +76,7 @@ public class MeetingController extends BaseController {
                 return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SET_NOTIFICATION_OFF_SUCCESS));
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SET_NOTIFICATION_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.SET_NOTIFICATION_FAILED, e.getMessage()));
         }
     }
 
@@ -97,7 +97,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED));
+            return ResponseEntity.ok(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
         }
     }
 
@@ -118,7 +118,7 @@ public class MeetingController extends BaseController {
 
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED));
+            return ResponseEntity.ok(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
         }
     }
 
@@ -142,7 +142,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED, e.getMessage()));
         }
     }
 
