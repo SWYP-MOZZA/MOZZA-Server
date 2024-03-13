@@ -33,6 +33,14 @@ public class SecurityConfig {
 
     private final TokenService tokenService;
 
+    private static final String[] AUTH_WHITELIST = {
+            "/api/**", "/graphiql", "/graphql",
+            "/swagger-ui/**", "/api-docs", "/swagger-ui-custom.html",
+            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html"
+    };
+
+
+
     public SecurityConfig(OAuth2UserService oAuth2UserService, OAuth2SuccessHandler customSuccessHandler, JWTUtil jwtUtil, UserRepository userRepository, TokenService tokenService) {
 
         this.oAuth2UserService = oAuth2UserService;
@@ -99,6 +107,9 @@ public class SecurityConfig {
                                 .requestMatchers("/meeting/*/details").permitAll()
                                 .requestMatchers("/security/token/refresh").permitAll()
                                 .requestMatchers("/oauth").permitAll()
+                                // swagger
+                                .requestMatchers(AUTH_WHITELIST).permitAll()
+
 //                        .anyRequest().authenticated()
                                 .anyRequest().authenticated()
                 );
