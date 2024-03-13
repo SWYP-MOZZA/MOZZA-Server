@@ -8,14 +8,19 @@ import java.util.List;
 public class MeetingResponseDto {
     @Setter
     @Getter
+    @AllArgsConstructor
     public static class ResponseDto{
         private Integer StatusCode;
         private String ResponseMessage;
+    }
 
-        public ResponseDto(Integer statusCode, String responseMessage) {
-            this.ResponseMessage = responseMessage;
-            this.StatusCode = statusCode;
-        }
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class ErrorResponseDto{
+        private Integer StatusCode;
+        private String ResponseMessage;
+        private String ErrorMessage;
     }
 
 
