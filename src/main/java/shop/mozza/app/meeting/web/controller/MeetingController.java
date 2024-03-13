@@ -34,7 +34,6 @@ public class MeetingController extends BaseController {
             User user = userService.getCurrentUser();
             Long meetingId = meetingService.createMeeting(meetingRequest, user);
             String accessToken = jwtTokenPublisher.IssueMeetingToken();
-
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.MAKE_MEETING_SUCCESS);
@@ -43,6 +42,7 @@ public class MeetingController extends BaseController {
             response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED));
         }
     }
@@ -61,7 +61,10 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("StatusCode", 400);
+            errorResponse.put("ResponseMessage", ResponseMessage.LOGOUT_FAILED);
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
