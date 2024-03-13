@@ -61,7 +61,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED, e.getMessage()));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED, e.getMessage()));
         }
     }
 
@@ -87,7 +87,7 @@ public class MeetingController extends BaseController {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
-                return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
             MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting);
             Map<String, Object> response = new HashMap<>();
@@ -97,7 +97,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
         }
     }
 
@@ -107,7 +107,7 @@ public class MeetingController extends BaseController {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
-                return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
             MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting);
             Map<String, Object> response = new HashMap<>();
@@ -118,7 +118,7 @@ public class MeetingController extends BaseController {
 
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
         }
     }
 
@@ -130,7 +130,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
         }
         catch (Exception e){
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
         }
     }
 
