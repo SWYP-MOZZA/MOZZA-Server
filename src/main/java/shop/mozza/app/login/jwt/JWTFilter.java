@@ -13,7 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.global.TokenService;
 import shop.mozza.app.login.oauth2.dto.response.TokenResponse;
 import shop.mozza.app.login.user.domain.KakaoOAuth2User;
 import shop.mozza.app.login.user.domain.User;
@@ -31,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
     @Value("${jwt.access-token.expire-length}")
     private int accessTokenValidityInSeconds;
 
@@ -54,11 +54,18 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
 
-        // AccessToken이 만료되었을 경우에만 Refresh Token을 사용하여 AccessToken을 갱신
+        // AccessToken이 만료되었을 경우
         if (jwtUtil.isExpired(authorization)) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 블랙리스트 토큰인 경우
+        if (tokenService.isTokenBlacklisted(authorization)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
 
         // AccessToken이 유효한 경우, 사용자 정보를 SecurityContext에 설정
         if (jwtUtil.validateToken(authorization)) {

@@ -13,7 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.global.TokenService;
 import shop.mozza.app.login.jwt.JWTUtil;
 import shop.mozza.app.login.oauth2.dto.response.OAuth2LoginResponse;
 import shop.mozza.app.login.user.domain.KakaoOAuth2User;
@@ -31,7 +31,7 @@ import java.util.Iterator;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
     private final UserRepository userRepository;
 
     @Value("${jwt.access-token.expire-length}")
@@ -58,7 +58,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = jwtUtil.createRefreshToken(username);
 
         // Refresh Token을 Redis에 저장
-        refreshTokenService.saveRefreshToken(username, refreshToken);
+        tokenService.saveRefreshToken(username, refreshToken);
 
         OAuth2LoginResponse loginResponse = new OAuth2LoginResponse();
         loginResponse.setStatusCode(200);

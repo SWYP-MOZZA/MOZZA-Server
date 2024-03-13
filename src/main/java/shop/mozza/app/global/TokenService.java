@@ -8,13 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
+import java.util.concurrent.TimeUnit;
+
 
 @Service
 @Slf4j
-public class RefreshTokenService {
+public class TokenService {
 
     @Value("${jwt.refresh-token.expire-length}")
     private long refreshTokenValidityInSeconds;
+
+    @Value("${jwt.access-token.expire-length}")
+    private long accessTokenValidityInSeconds;
 
 
     @Autowired
@@ -48,4 +53,16 @@ public class RefreshTokenService {
         // 저장된 refreshToken과 입력받은 refreshToken이 동일한지 확인
         return refreshToken.equals(redisRefreshToken);
     }
+
+    public void addToBlacklist(String token) {
+        log.info("Adding token to blacklist: " + token);
+        ValueOperations<String, String> values = redisTemplate.opsForValue();
+        values.set("BL_" + token, "blacklisted", refreshTokenValidityInSeconds, TimeUnit.SECONDS);
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        String value = redisTemplate.opsForValue().get("BL_" + token);
+        return value != null;
+    }
+
 }

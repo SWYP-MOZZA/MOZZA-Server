@@ -8,15 +8,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.global.TokenService;
 import shop.mozza.app.login.jwt.JWTUtil;
 import shop.mozza.app.login.oauth2.dto.response.KakaoUserInfoResponse;
 import shop.mozza.app.login.oauth2.dto.response.OAuth2LoginResponse;
 import shop.mozza.app.login.user.domain.KakaoOAuth2User;
 import shop.mozza.app.login.user.domain.User;
-import shop.mozza.app.login.user.dto.UserDto;
 import shop.mozza.app.login.user.repository.UserRepository;
-import shop.mozza.app.login.oauth2.dto.response.OAuth2Response;
 
 @RequiredArgsConstructor
 @Service
@@ -30,7 +28,7 @@ public class UserService {
 
     private final JWTUtil jwtUtil;
 
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
 
     public User createUser (KakaoUserInfoResponse userInfo) {
@@ -59,7 +57,7 @@ public class UserService {
     public OAuth2LoginResponse getLoginReponse(User user) {
 
         String refreshToken = jwtUtil.createRefreshToken(user.getName());
-        refreshTokenService.saveRefreshToken(user.getName(), refreshToken);
+        tokenService.saveRefreshToken(user.getName(), refreshToken);
 
 
         return OAuth2LoginResponse.builder()

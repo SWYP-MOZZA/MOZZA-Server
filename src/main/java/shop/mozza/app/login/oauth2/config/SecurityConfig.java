@@ -9,10 +9,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import shop.mozza.app.global.RefreshTokenService;
+import shop.mozza.app.global.TokenService;
 import shop.mozza.app.login.jwt.JWTFilter;
 import shop.mozza.app.login.jwt.JWTUtil;
 import shop.mozza.app.login.oauth2.service.OAuth2SuccessHandler;
@@ -32,15 +31,15 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
 
-    private final RefreshTokenService refreshTokenService;
+    private final TokenService tokenService;
 
-    public SecurityConfig(OAuth2UserService oAuth2UserService, OAuth2SuccessHandler customSuccessHandler, JWTUtil jwtUtil, UserRepository userRepository, RefreshTokenService refreshTokenService) {
+    public SecurityConfig(OAuth2UserService oAuth2UserService, OAuth2SuccessHandler customSuccessHandler, JWTUtil jwtUtil, UserRepository userRepository, TokenService tokenService) {
 
         this.oAuth2UserService = oAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
-        this.refreshTokenService = refreshTokenService;
+        this.tokenService = tokenService;
     }
 
 
@@ -81,7 +80,7 @@ public class SecurityConfig {
 
         //JWTFilter 추가
         http
-                .addFilterAfter(new JWTFilter(jwtUtil,userRepository,refreshTokenService), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil,userRepository, tokenService), OAuth2LoginAuthenticationFilter.class);
 //        //oauth2
 //        http
 //                .oauth2Login((oauth2) -> oauth2
@@ -93,13 +92,15 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .anyRequest().permitAll()
-//                        .requestMatchers("/**").permitAll()
-//                        .requestMatchers("/guest").permitAll()
-//                        .requestMatchers("/meeting/create").permitAll()
-//                        .requestMatchers("/meeting/{}/short").permitAll()
-//                        .requestMatchers("/oauth").permitAll()
+                                .requestMatchers("/meeting/create").permitAll()
+                                .requestMatchers("/meeting/*/short").permitAll()
+                                .requestMatchers("/guest/**").permitAll()
+                                .requestMatchers("/meeting/*/choice").permitAll()
+                                .requestMatchers("/meeting/*/details").permitAll()
+                                .requestMatchers("/security/token/refresh").permitAll()
+                                .requestMatchers("/oauth").permitAll()
 //                        .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 );
 
         //세션 설정 : STATELESS
