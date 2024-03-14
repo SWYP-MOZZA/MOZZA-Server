@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import shop.mozza.app.exception.ResponseMessage;
 import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -36,7 +38,6 @@ public class MeetingService {
     private final DateTimeInfoRepository dateTimeInfoRepository;
     private final UserRepository userRepository;
     private final JWTTokenPublisher jwtTokenPublisher;
-
     private final AttendeeRepository attendeeRepository;
 
     @PersistenceContext
@@ -341,7 +342,6 @@ public class MeetingService {
     }
 
 
-
     public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
@@ -381,7 +381,61 @@ public class MeetingService {
         }
     }
 
+    //User 정보로 모든 meeting을 찾아오는 함수
+    public List<Meeting> findMeetingsByUser(User user) {
+        return meetingRepository.findMeetingsByCreator(user);
+    }
+
+    // confirmed meeting과 in progress meeting 모두 mapped한 후 가져와서 response를 만들어주는 함수
+    public MeetingResponseDto.AllMeetingResponseDto findAllmeetings(User user) {
+
+        List<Meeting> meetings = findMeetingsByUser(user);
+        List<MeetingResponseDto.MeetingInfo> confirmedMeetings = mapToConfirmedMeetingInfo(meetings);
+        List<MeetingResponseDto.MeetingInfo> inProgress = mapToInProgressMeetingInfo(meetings);
+
+        return MeetingResponseDto.AllMeetingResponseDto.builder()
+                .StatusCode(200)
+                .ConfirmedMeetings(confirmedMeetings)
+                .InProgress(inProgress)
+                .ResponseMessage(ResponseMessage.GET_ALL_MEETING_SUCCESS)
+                .build();
+
+    }
+
+    private List<MeetingResponseDto.MeetingInfo> mapToConfirmedMeetingInfo(List<Meeting> meetings) {
+        return meetings.stream()
+                .filter(meeting -> meeting.getIsConfirmed() != null && meeting.getIsConfirmed())
+                .map(this::mapToMeetingInfo)
+                .collect(Collectors.toList());
+    }
+
+    private List<MeetingResponseDto.MeetingInfo> mapToInProgressMeetingInfo(List<Meeting> meetings) {
+        return meetings.stream()
+                .filter(meeting -> meeting.getIsConfirmed() == null || !meeting.getIsConfirmed())
+                .map(this::mapToMeetingInfo)
+                .collect(Collectors.toList());
+    }
+
+    public static String getTimeAsString(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        return dateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    // Meeting을 MeetingInfoDTO로 mapping하는 함수
+    private MeetingResponseDto.MeetingInfo mapToMeetingInfo(Meeting meeting) {
+        return MeetingResponseDto.MeetingInfo.builder()
+                .meetingId(meeting.getId())
+                .meetingName(meeting.getName())
+                .confirmedDate(getDateStringFromLocalDateTime(meeting.getConfirmedStartDateTime()))
+                .confirmedTime(MeetingResponseDto.TimeInfo.builder()
+                        .startTime(getTimeAsString(meeting.getConfirmedStartDateTime()))
+                        .endTime(getTimeAsString(meeting.getConfirmedEndDateTime()))
+                        .build())
+                .submitUserNumber(meeting.getNumberOfVoter())
+                .createdAt(meeting.getCreatedAt())
+                .build();
+    }
+
 }
-
-
-
