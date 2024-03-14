@@ -45,7 +45,7 @@ public class MeetingController extends BaseController {
             response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED, e.getMessage() ));
         }
     }
 
@@ -63,7 +63,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GUEST_LOGIN_FAILED, e.getMessage()));
         }
     }
 
@@ -78,7 +78,7 @@ public class MeetingController extends BaseController {
                 return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SET_NOTIFICATION_OFF_SUCCESS));
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SET_NOTIFICATION_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.SET_NOTIFICATION_FAILED, e.getMessage()));
         }
     }
 
@@ -89,7 +89,7 @@ public class MeetingController extends BaseController {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
-                return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
             MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting);
             Map<String, Object> response = new HashMap<>();
@@ -99,7 +99,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
         }
     }
 
@@ -109,7 +109,7 @@ public class MeetingController extends BaseController {
         try {
             Meeting meeting = meetingService.findMeetingById(id);
             if (meeting == null) {
-                return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
             MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting);
             Map<String, Object> response = new HashMap<>();
@@ -120,7 +120,7 @@ public class MeetingController extends BaseController {
 
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEEITNG_INFO_FAILED, e.getMessage()));
         }
     }
 
@@ -132,7 +132,7 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
         }
         catch (Exception e){
-            return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
         }
     }
 
@@ -144,9 +144,28 @@ public class MeetingController extends BaseController {
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED, e.getMessage()));
         }
     }
+@GetMapping("/all-meetings")
+public ResponseEntity<?> GetAllMeetings() {
+    try {
+        User user = userService.getCurrentUser();
+        List<Meeting> meetings = meetingService.findMeetingsByUser(user);
+        if (meetings == null || meetings.isEmpty()) {
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.NO_MEEITNG_LIST_ERROR));
+        }
+
+        MeetingResponseDto.AllMeetingResponseDto responseDto = meetingService.findAllmeetings(user);
+
+        return ResponseEntity.ok(responseDto);
+    }
+    catch (Exception e){
+        return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_ALL_MEETING_FAILED, e.getMessage()));
+    }
+}
+
+
 
 
 

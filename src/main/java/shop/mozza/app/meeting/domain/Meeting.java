@@ -5,6 +5,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+
+import shop.mozza.app.base.BaseEntity;
 import shop.mozza.app.login.user.domain.User;
 
 
@@ -13,7 +15,7 @@ import shop.mozza.app.login.user.domain.User;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Meeting {
+public class Meeting extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,8 +34,15 @@ public class Meeting {
     private String URL;
 
     //모임의 확정된 날짜/시간으로, null일 경우 not confirmed 모임이다.
+    //DB에는 dateTime형식으로 저장
     @Column
-    private LocalDateTime ConfirmedDateTime;
+    private LocalDateTime ConfirmedStartDateTime;
+
+    @Column
+    private LocalDateTime ConfirmedEndDateTime;
+
+    @Column
+    private Boolean isConfirmed;
 
     // 원하는 인원만큼 가능한 모임 시간을 제출하면 알림을 보내준다. null일 경우 알림을 보내지 않는다.
     @Column

@@ -22,4 +22,7 @@ public class ResponseMessage {
     public static final String LOGOUT_FAILED = "로그아웃 실패";
 
 
+    public static final String GET_ALL_MEETING_SUCCESS = "전체 모임 조회에 성공했습니다.";
+    public static final String GET_ALL_MEETING_FAILED = "모임 목록을 불러올 수 없습니다.";
+    public static final String NO_MEEITNG_LIST_ERROR = "모임 목록이 없습니다.";
 }
