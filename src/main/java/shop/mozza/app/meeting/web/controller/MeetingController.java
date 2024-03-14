@@ -34,7 +34,6 @@ public class MeetingController extends BaseController {
             User user = userService.getCurrentUser();
             Long meetingId = meetingService.createMeeting(meetingRequest, user);
             String accessToken = jwtTokenPublisher.IssueMeetingToken();
-
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.MAKE_MEETING_SUCCESS);
