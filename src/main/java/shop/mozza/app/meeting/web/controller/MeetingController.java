@@ -1,5 +1,6 @@
 package shop.mozza.app.meeting.web.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Meeting", description = "Meeting API")
 public class MeetingController extends BaseController {
 
     private final MeetingService meetingService;
