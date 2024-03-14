@@ -16,6 +16,8 @@ import shop.mozza.app.login.user.domain.KakaoOAuth2User;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
 
+import java.util.Random;
+
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -82,7 +84,22 @@ public class UserService {
 
         // Assuming the principal can be cast to a KakaoOAuth2User or similar that contains the username
         Object principal = authentication.getPrincipal();
+        if (principal.equals("anonymousUser")) {
+
+            Random rand = new Random();
+            // 100000(10^5) 이상 999999(10^6 - 1) 이하의 랜덤 정수 생성
+            int randomNum = rand.nextInt(900000) + 100000;
+
+
+            return User.builder()
+                    .role("anonymousUser")
+                    .isMember(false)
+                    .name("anonymousUser"+ String.valueOf(randomNum))
+                    .build();
+
+        }
         String username;
+
 
         if (principal instanceof KakaoOAuth2User) { // Or any other implementation you use
             username = ((KakaoOAuth2User) principal).getName();
