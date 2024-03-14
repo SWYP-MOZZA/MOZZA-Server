@@ -145,6 +145,25 @@ public class MeetingController extends BaseController {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.SUBMIT_SCHEDULE_FAILED, e.getMessage()));
         }
     }
+@GetMapping("/all-meetings")
+public ResponseEntity<?> GetAllMeetings() {
+    try {
+        User user = userService.getCurrentUser();
+        List<Meeting> meetings = meetingService.findMeetingsByUser(user);
+        if (meetings == null || meetings.isEmpty()) {
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.NO_MEEITNG_LIST_ERROR));
+        }
+
+        MeetingResponseDto.AllMeetingResponseDto responseDto = meetingService.findAllmeetings(user);
+
+        return ResponseEntity.ok(responseDto);
+    }
+    catch (Exception e){
+        return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_ALL_MEETING_FAILED, e.getMessage()));
+    }
+}
+
+
 
 
 

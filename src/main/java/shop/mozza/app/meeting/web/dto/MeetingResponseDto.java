@@ -3,6 +3,7 @@ package shop.mozza.app.meeting.web.dto;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class MeetingResponseDto {
@@ -48,8 +49,37 @@ public class MeetingResponseDto {
         private String startTime;
         private String endTime;
     }
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AllMeetingResponseDto {
+        private Integer StatusCode;
+        private List<MeetingInfo> ConfirmedMeetings;
+        private List<MeetingInfo> InProgress;
+        private String ResponseMessage;
+    }
 
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class MeetingInfo {
+        private Long meetingId;
+        private String meetingName;
+        private String confirmedDate;
+        private TimeInfo confirmedTime;
+        private Integer submitUserNumber;
+        private LocalDateTime createdAt;
+    }
 
-
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class TimeInfo {
+        private String startTime;
+        private String endTime;
+    }
 
 }
