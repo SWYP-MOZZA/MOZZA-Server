@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface DateTimeInfoRepository extends JpaRepository<DateTimeInfo,Long> {
     List<DateTimeInfo> findByMeeting(Meeting meeting);
+    List<DateTimeInfo> findByMeetingAndIsConfirmed(Meeting meeting, Boolean isConfirmed);
 }

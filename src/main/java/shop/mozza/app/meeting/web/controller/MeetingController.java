@@ -184,6 +184,20 @@ public ResponseEntity<?> GetAllMeetings() {
         }
     }
 
+    @GetMapping("/meeting/{id}/details")
+    public ResponseEntity<?> getMeetingDetail(@PathVariable Long id) {
+        try {
+            Meeting meeting = meetingService.findMeetingById(id);
+
+            if (meeting == null)
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+
+            return ResponseEntity.ok(meetingService.getMeetingDetails(meeting));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.CONFIRM_MEETING_FAILED, e.getMessage()));
+        }
+    }
 
 
 
