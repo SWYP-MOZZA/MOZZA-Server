@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import shop.mozza.app.exception.CustomExceptions;
 import shop.mozza.app.exception.ResponseMessage;
 import shop.mozza.app.login.jwt.token.JWTTokenPublisher;
 import shop.mozza.app.login.user.domain.User;
@@ -128,7 +129,7 @@ public class MeetingService {
         for (String date : dates) {
             DateTimeInfo dti = DateTimeInfo
                     .builder()
-                    .date(stringToDateOnly(date))
+                    .datetime(stringToDateTimeOnly(date))
                     .meeting(meeting)
                     .build();
             dateTimeInfoRepository.save(dti);
@@ -313,13 +314,14 @@ public class MeetingService {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
             Meeting meeting = optionalMeeting.get();
+            meeting.addSubmitCount();
 
             for (MeetingRequestDto.DateSubmitRequest dateRequest : dateRequests) {
                 String date = dateRequest.getDate();
                 boolean isActive = dateRequest.getIsActive();
                 Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
                         .stream()
-                        .filter(dateTimeInfo -> getDateStringFromLocalDate(dateTimeInfo.getDate()).equals(date))
+                        .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
                         .findFirst();
 
                 if (optionalDateTimeInfo.isPresent() && isActive) {
@@ -336,16 +338,12 @@ public class MeetingService {
         }
     }
 
-    private String getDateTimeStringFromLocalDateTime(LocalDateTime dateTime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        return dateTime.format(formatter);
-    }
-
 
     public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
             Meeting meeting = optionalMeeting.get();
+            meeting.addSubmitCount();
 
             // 날짜별로 순회
             for (Map.Entry<String, List<MeetingRequestDto.TimeSlot>> entry : dateTimeRequests.entrySet()) {
@@ -377,7 +375,7 @@ public class MeetingService {
                 }
             }
         } else {
-            // 미팅이 존재하지 않을 경우의 처리 (예외 던지기 또는 로깅)
+            throw new CustomExceptions.MeetingNotFoundException("모임을 찾을 수 없습니다.");
         }
     }
 
@@ -386,9 +384,9 @@ public class MeetingService {
         return meetingRepository.findMeetingsByCreator(user);
     }
 
+
     // confirmed meeting과 in progress meeting 모두 mapped한 후 가져와서 response를 만들어주는 함수
     public MeetingResponseDto.AllMeetingResponseDto findAllmeetings(User user) {
-
         List<Meeting> meetings = findMeetingsByUser(user);
         List<MeetingResponseDto.MeetingInfo> confirmedMeetings = mapToConfirmedMeetingInfo(meetings);
         List<MeetingResponseDto.MeetingInfo> inProgress = mapToInProgressMeetingInfo(meetings);
@@ -438,4 +436,143 @@ public class MeetingService {
                 .build();
     }
 
+    // String 날짜 + 시간을 LocalDateTime으로 바꾸는 함수
+    private static LocalDateTime convertStringToDateTime(String date, String time) {
+        LocalDateTime dateTime = LocalDateTime.of(
+                LocalDate.parse(date),
+                LocalTime.parse(time)
+        );
+        return dateTime;
+    }
+
+    // DateTimeInfo의 confirmed만 바꾸는 함수
+    private void confirmDateTimeInfo(Meeting meeting, LocalDateTime start, LocalDateTime end) {
+        List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
+
+        if (dateTimeInfos != null) {
+            for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+                if (dateTimeInfo != null) {
+                    if (dateTimeInfo.getDatetime().toLocalTime().equals(start))
+                        dateTimeInfo.updateIsConfirmed(true);
+                    else if (dateTimeInfo.getDatetime().toLocalTime().equals(end))
+                        dateTimeInfo.updateIsConfirmed(true);
+                    else if (dateTimeInfo.getDatetime().toLocalTime().isAfter(start.toLocalTime()) &&
+                            dateTimeInfo.getDatetime().toLocalTime().isBefore(end.toLocalTime())) {
+                        dateTimeInfo.updateIsConfirmed(true);
+                    }
+                }
+            }
+        }
+    }
+
+
+    // meeting의 confirmed 관련 내용을 업데이트 하고 response 내용에 맞게 mapping하는 함수
+    public MeetingResponseDto.confirmResponse confirmMeeting(Meeting meeting, MeetingRequestDto.confirmRequest request) {
+
+        String date = request.getConfirmedDate();
+        LocalDateTime startDateTime = convertStringToDateTime(date, request.getConfirmedStartTime());
+        LocalDateTime endDateTime = convertStringToDateTime(date, request.getConfirmedEndTime());
+
+        confirmDateTimeInfo(meeting, startDateTime, endDateTime);
+        meeting.updateIsConfirmed(true, startDateTime, endDateTime);
+
+        return MeetingResponseDto.confirmResponse
+                .builder()
+                .id(meeting.getId())
+                .createdAt(meeting.getCreatedAt())
+                .numberOfSubmit(meeting.getNumberOfVoter())
+                .confirmedDate(date)
+                .confirmedStartTime(request.getConfirmedStartTime())
+                .confirmedEndTime(request.getConfirmedEndTime())
+                .statusCode(200)
+                .responseMessage(ResponseMessage.CONFIRM_MEETING_SUCCESS)
+                .build();
+
+    }
+
+    // time range를 만드는 함수, startTime과 endTime을 가지고 있음
+    private MeetingResponseDto.MeetingDetailResponse.TimeRange makeTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        String startTime = startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+        String endTime = endDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        return MeetingResponseDto.MeetingDetailResponse.TimeRange.builder()
+                .startTime(startTime)
+                .endTime(endTime)
+                .build();
+    }
+
+    // 해당 dateTimeInfo를 가지고 있는 attendee의 이름을 모두 불러오는 함수
+    @Transactional
+    public List<String> getUserNamesForDateTimeInfo(DateTimeInfo dateTimeInfo) {
+        String query = "SELECT a.user.name FROM Attendee a WHERE a.dateTimeInfo = :dateTimeInfo";
+
+        // Execute the query
+        return entityManager.createQuery(query, String.class)
+                .setParameter("dateTimeInfo", dateTimeInfo)
+                .getResultList();
+    }
+
+    // LocalDateTime 형에서 time만 추출해서 String으로 변환하는 함수
+    private String formatTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        return dateTime.format(formatter);
+    }
+
+    public Double calculateRatioForDateTimeInfo(DateTimeInfo dateTimeInfo, Meeting meeting) {
+        List<String> userNames = getUserNamesForDateTimeInfo(dateTimeInfo);
+        Integer numberOfAttendee = userNames.size();
+
+        // Assuming total number of users is available from somewhere
+        Integer totalNumberOfUsers = meeting.getNumberOfVoter();
+
+        // Calculate ratio
+        return (double) numberOfAttendee / totalNumberOfUsers;
+    }
+
+    @Transactional
+    public Map<String, List<MeetingResponseDto.MeetingDetailResponse.DateTimeInfoDto>> makeDateTimeInfoDto(Meeting meeting) {
+
+        List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
+
+        Map<String, List<MeetingResponseDto.MeetingDetailResponse.DateTimeInfoDto>> resultMap = new HashMap<>();
+
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
+            MeetingResponseDto.MeetingDetailResponse.DateTimeInfoDto dateTimeInfoDto
+                    = MeetingResponseDto.MeetingDetailResponse.DateTimeInfoDto.builder()
+                    .time(formatTime(dateTimeInfo.getDatetime()))
+                    .attendee(getUserNamesForDateTimeInfo(dateTimeInfo))
+                    .ratio(calculateRatioForDateTimeInfo(dateTimeInfo, meeting))
+                    .build();
+
+            resultMap.computeIfAbsent(dateTimeInfo.getDatetime().toLocalDate().toString(), k -> new ArrayList<>())
+                    .add(dateTimeInfoDto);
+        }
+
+        return resultMap;
+    }
+
+    public MeetingResponseDto.MeetingDetailResponse getMeetingDetails(Meeting meeting) {
+
+        MeetingResponseDto.MeetingDetailResponse.TimeRange timeRange
+                = makeTimeRange(meeting.getConfirmedStartDateTime(), meeting.getConfirmedEndDateTime());
+
+        return MeetingResponseDto.MeetingDetailResponse.builder()
+                .id(meeting.getId())
+                .createdAt(meeting.getCreatedAt())
+                .numberOfSubmit(meeting.getNumberOfVoter())
+                .confirmedDate(getDateStringFromLocalDateTime(meeting.getConfirmedStartDateTime()))
+                .confirmedTime(timeRange)
+                .confirmedAttendee(findConfirmedAttendee(meeting))
+                .data(makeDateTimeInfoDto(meeting))
+                .build();
+    }
+
+    private List<String> findConfirmedAttendee(Meeting meeting) {
+        List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeetingAndIsConfirmed(meeting, true);
+        if (!dateTimeInfos.isEmpty()) {
+            DateTimeInfo firstDateTimeInfo = dateTimeInfos.get(0);
+            return getUserNamesForDateTimeInfo(firstDateTimeInfo);
+        }else
+            throw new CustomExceptions.Exception("아직 모임이 확정되지 않았습니다.");
+    }
 }

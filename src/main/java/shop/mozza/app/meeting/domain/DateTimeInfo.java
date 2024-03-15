@@ -24,10 +24,12 @@ public class DateTimeInfo {
     private LocalDateTime datetime;
 
     @Column
-    private LocalDate date;
-    @Column
     private Boolean isConfirmed;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Meeting meeting;
+
+    public void updateIsConfirmed(Boolean isConfirmed){
+        this.isConfirmed = isConfirmed;
+    }
 }

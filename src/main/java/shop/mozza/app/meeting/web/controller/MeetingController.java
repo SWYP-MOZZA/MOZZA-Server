@@ -1,5 +1,6 @@
 package shop.mozza.app.meeting.web.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Meeting", description = "Meeting API")
 public class MeetingController extends BaseController {
 
     private final MeetingService meetingService;
@@ -162,7 +164,40 @@ public ResponseEntity<?> GetAllMeetings() {
     }
 }
 
+    @PutMapping("/meeting/{id}/confirm")
+    public ResponseEntity<?> confirmMeetings(@PathVariable Long id, @RequestBody MeetingRequestDto.confirmRequest request) {
+        try {
+            User user = userService.getCurrentUser();
+            Meeting meeting = meetingService.findMeetingById(id);
 
+            if (meeting == null)
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+            // 현재 유저가 모임장이 아닐 때 예외 추가
+//            if (!meeting.getCreator().equals(user))
+//                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
+
+            MeetingResponseDto.confirmResponse response = meetingService.confirmMeeting(meeting,request);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.CONFIRM_MEETING_FAILED, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/meeting/{id}/details")
+    public ResponseEntity<?> getMeetingDetail(@PathVariable Long id) {
+        try {
+            Meeting meeting = meetingService.findMeetingById(id);
+
+            if (meeting == null)
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
+
+            return ResponseEntity.ok(meetingService.getMeetingDetails(meeting));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.CONFIRM_MEETING_FAILED, e.getMessage()));
+        }
+    }
 
 
 

@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class MeetingResponseDto {
     @Setter
@@ -80,6 +81,50 @@ public class MeetingResponseDto {
     public static class TimeInfo {
         private String startTime;
         private String endTime;
+    }
+
+
+    @Builder
+    @Getter
+    public static class confirmResponse{
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private String confirmedDate;
+        private String confirmedStartTime;
+        private String confirmedEndTime;
+        private Integer statusCode;
+        private String responseMessage;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class MeetingDetailResponse {
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private String confirmedDate;
+        private TimeRange confirmedTime;
+        private List<String> confirmedAttendee;
+        private Map<String, List<DateTimeInfoDto>> data;
+        @Getter
+        @Setter
+        @Builder
+        public static class TimeRange {
+            private String startTime;
+            private String endTime;
+
+        }
+        @Getter
+        @Setter
+        @Builder
+        public static class DateTimeInfoDto {
+            private String time;
+            private List<String> attendee;
+            private Double ratio;
+
+        }
     }
 
 }

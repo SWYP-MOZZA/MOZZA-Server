@@ -1,9 +1,12 @@
 package shop.mozza.app.meeting.web.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 
 public class MeetingRequestDto {
@@ -45,4 +48,14 @@ public class MeetingRequestDto {
         private String time;
         private Boolean isActive;
     }
+
+    @Getter
+    @Setter
+    public static class confirmRequest{
+        private String confirmedDate;
+        private String confirmedStartTime;
+        private String confirmedEndTime;
+    }
+
+
 }
