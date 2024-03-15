@@ -129,7 +129,7 @@ public class MeetingService {
         for (String date : dates) {
             DateTimeInfo dti = DateTimeInfo
                     .builder()
-                    .datetime(stringToDateTimeOnly(date))
+                    .datetime(stringToDateOnly(date).atStartOfDay())
                     .meeting(meeting)
                     .build();
             dateTimeInfoRepository.save(dti);
