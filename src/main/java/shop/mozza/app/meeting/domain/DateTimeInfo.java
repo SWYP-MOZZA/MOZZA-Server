@@ -30,4 +30,8 @@ public class DateTimeInfo {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Meeting meeting;
+
+    public void updateIsConfirmed(Boolean isConfirmed){
+        this.isConfirmed = isConfirmed;
+    }
 }

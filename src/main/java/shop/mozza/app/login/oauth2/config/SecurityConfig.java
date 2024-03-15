@@ -105,6 +105,7 @@ public class SecurityConfig {
                                 .requestMatchers("/guest/**").permitAll()
                                 .requestMatchers("/meeting/*/choice").permitAll()
                                 .requestMatchers("/meeting/*/details").permitAll()
+                                .requestMatchers("/meeting/*/confirm").permitAll()
                                 .requestMatchers("/security/token/refresh").permitAll()
                                 .requestMatchers("/oauth").permitAll()
                                 // swagger
@@ -123,7 +124,6 @@ public class SecurityConfig {
     }
 
 }
-
 
 
 

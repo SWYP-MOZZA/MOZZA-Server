@@ -82,4 +82,18 @@ public class MeetingResponseDto {
         private String endTime;
     }
 
+
+    @Builder
+    @Getter
+    public static class confirmResponse{
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private String confirmedDate;
+        private String confirmedStartTime;
+        private String confirmedEndTime;
+        private Integer statusCode;
+        private String responseMessage;
+    }
+
 }

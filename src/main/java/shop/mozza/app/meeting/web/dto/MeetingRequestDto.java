@@ -45,4 +45,12 @@ public class MeetingRequestDto {
         private String time;
         private Boolean isActive;
     }
+
+    @Getter
+    @Setter
+    public static class confirmRequest{
+        private String confirmedDate;
+        private String confirmedStartTime;
+        private String confirmedEndTime;
+    }
 }
