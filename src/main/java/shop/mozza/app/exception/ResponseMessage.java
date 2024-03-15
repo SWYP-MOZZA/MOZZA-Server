@@ -25,4 +25,10 @@ public class ResponseMessage {
     public static final String GET_ALL_MEETING_SUCCESS = "전체 모임 조회에 성공했습니다.";
     public static final String GET_ALL_MEETING_FAILED = "모임 목록을 불러올 수 없습니다.";
     public static final String NO_MEEITNG_LIST_ERROR = "모임 목록이 없습니다.";
+
+
+    public static final String CONFIRM_MEETING_FAILED = "모임 일정 확정을 실패했습니다.";
+    public static final String CONFIRM_MEETING_SUCCESS = "모임 일정 확정을 완료했습니다.";
+    public static final String USER_NOT_CREATOR = "모임장이 아닙니다.";
+
 }

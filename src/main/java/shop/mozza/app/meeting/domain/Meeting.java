@@ -62,5 +62,14 @@ public class Meeting extends BaseEntity {
         this.notification = notification;
     }
 
+    public void addSubmitCount(){
+        NumberOfVoter ++;
+    }
+
+    public void updateIsConfirmed(Boolean isConfirmed, LocalDateTime startDateTime, LocalDateTime endDateTime){
+        this.isConfirmed = isConfirmed;
+        this.ConfirmedStartDateTime = startDateTime;
+        this.ConfirmedEndDateTime = endDateTime;
+    }
 
 }
