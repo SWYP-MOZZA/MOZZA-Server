@@ -30,6 +30,7 @@ public class ResponseMessage {
     public static final String CONFIRM_MEETING_FAILED = "모임 일정 확정을 실패했습니다.";
     public static final String CONFIRM_MEETING_SUCCESS = "모임 일정 확정을 완료했습니다.";
     public static final String USER_NOT_CREATOR = "모임장이 아닙니다.";
+    public static final String GET_MEETING_DETAIL_SUCCESS = "자세한 모임 일정 불러오기 완료";
 
 
     public static final String GET_MEETING_DETAILS_FAILED = "모임 일정 상세 조회 실패했습니다.";
