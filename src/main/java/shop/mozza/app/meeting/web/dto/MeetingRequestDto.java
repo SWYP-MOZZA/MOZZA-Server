@@ -51,10 +51,17 @@ public class MeetingRequestDto {
 
     @Getter
     @Setter
-    public static class confirmRequest{
+    public static class confirmDateTimeRequest{
         private String confirmedDate;
         private String confirmedStartTime;
         private String confirmedEndTime;
+    }
+
+    @Getter
+    @Setter
+    public static class confirmDateRequest{
+        private String confirmedStartDate;
+        private String confirmedEndDate;
     }
 
 

@@ -86,6 +86,7 @@ public class MeetingResponseDto {
 
     @Builder
     @Getter
+    @Setter
     public static class confirmResponse{
         private Long id;
         private LocalDateTime createdAt;
@@ -93,6 +94,19 @@ public class MeetingResponseDto {
         private String confirmedDate;
         private String confirmedStartTime;
         private String confirmedEndTime;
+        private Integer statusCode;
+        private String responseMessage;
+    }
+
+    @Builder
+    @Getter
+    @Setter
+    public static class confirmDateResponse{
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private String confirmedStartDate;
+        private String confirmedEndDate;
         private Integer statusCode;
         private String responseMessage;
     }

@@ -128,6 +128,7 @@ public class MeetingService {
                     .builder()
                     .datetime(stringToDateOnly(date).atStartOfDay())
                     .meeting(meeting)
+                    .isConfirmed(false)
                     .build();
             dateTimeInfoRepository.save(dti);
         }
@@ -150,6 +151,7 @@ public class MeetingService {
                         .builder()
                         .datetime(dateTime)
                         .meeting(meeting)
+                        .isConfirmed(false)
                         .build();
                 dateTimeInfoRepository.save(dti);
             }
@@ -463,7 +465,7 @@ public class MeetingService {
 
 
     // meeting의 confirmed 관련 내용을 업데이트 하고 response 내용에 맞게 mapping하는 함수
-    public MeetingResponseDto.confirmResponse confirmMeeting(Meeting meeting, MeetingRequestDto.confirmRequest request) {
+    public MeetingResponseDto.confirmResponse confirmMeeting(Meeting meeting, MeetingRequestDto.confirmDateTimeRequest request) {
 
         String date = request.getConfirmedDate();
         LocalDateTime startDateTime = convertStringToDateTime(date, request.getConfirmedStartTime());
@@ -485,6 +487,30 @@ public class MeetingService {
                 .build();
 
     }
+
+    public MeetingResponseDto.confirmDateResponse confirmDateMeeting(Meeting meeting, MeetingRequestDto.confirmDateRequest request) {
+        LocalDateTime startDateTime = stringToDateOnly(request.getConfirmedStartDate()).atStartOfDay();
+        LocalDateTime endDateTime = stringToDateOnly(request.getConfirmedEndDate()).atStartOfDay();
+
+        confirmDateTimeInfo(meeting, startDateTime, endDateTime);
+        meeting.updateIsConfirmed(true, startDateTime, endDateTime);
+
+        return MeetingResponseDto.confirmDateResponse
+                .builder()
+                .id(meeting.getId())
+                .createdAt(meeting.getCreatedAt())
+                .numberOfSubmit(meeting.getNumberOfVoter())
+                .confirmedStartDate(request.getConfirmedStartDate())
+                .confirmedEndDate(request.getConfirmedEndDate())
+                .statusCode(200)
+                .responseMessage(ResponseMessage.CONFIRM_MEETING_SUCCESS)
+                .build();
+
+
+
+    }
+
+    // ------------------confirm meeting 끝, get meeting details 시작 ------------------------
 
     // time range를 만드는 함수, startTime과 endTime을 가지고 있음
     private MeetingResponseDto.TimeRange makeTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
@@ -644,4 +670,8 @@ public class MeetingService {
     }
 
 
+
+
+
+// ------------------get meeting details 끝 ------------------------
 }

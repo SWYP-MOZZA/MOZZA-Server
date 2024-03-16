@@ -106,6 +106,7 @@ public class SecurityConfig {
                                 .requestMatchers("/meeting/*/choice").permitAll()
                                 .requestMatchers("/meeting/*/details").permitAll()
                                 .requestMatchers("/meeting/*/confirm").permitAll()
+                                .requestMatchers("/meeting/*/date/confirm").permitAll()
                                 .requestMatchers("/meeting/*/submit").permitAll()
                                 .requestMatchers("/security/token/refresh").permitAll()
                                 .requestMatchers("/oauth").permitAll()
