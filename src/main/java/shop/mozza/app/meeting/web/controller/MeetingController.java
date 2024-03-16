@@ -18,6 +18,7 @@ import shop.mozza.app.meeting.web.dto.MeetingResponseDto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -87,11 +88,11 @@ public class MeetingController extends BaseController {
     @GetMapping("/meeting/{id}/short")
     public ResponseEntity<?> getShortMeetingInfo(@PathVariable Long id) {
         try {
-            Meeting meeting = meetingService.findMeetingById(id);
-            if (meeting == null) {
+            Optional<Meeting> meeting = meetingService.findMeetingById(id);
+            if (meeting.isEmpty()) {
                 return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
-            MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting);
+            MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting.get());
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
@@ -107,11 +108,11 @@ public class MeetingController extends BaseController {
     @GetMapping("meeting/{id}/choice")
     public ResponseEntity<?> getMeetingOptions(@PathVariable Long id) {
         try {
-            Meeting meeting = meetingService.findMeetingById(id);
-            if (meeting == null) {
+            Optional<Meeting> meeting = meetingService.findMeetingById(id);
+            if (meeting.isEmpty()) {
                 return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             }
-            MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting);
+            MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting.get());
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
@@ -169,15 +170,15 @@ public ResponseEntity<?> GetAllMeetings() {
     public ResponseEntity<?> confirmMeetings(@PathVariable Long id, @RequestBody MeetingRequestDto.confirmRequest request) {
         try {
             User user = userService.getCurrentUser();
-            Meeting meeting = meetingService.findMeetingById(id);
+            Optional<Meeting> meeting = meetingService.findMeetingById(id);
 
-            if (meeting == null)
+            if (meeting.isEmpty())
                 return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             // 현재 유저가 모임장이 아닐 때 예외 추가
 //            if (!meeting.getCreator().equals(user))
 //                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
 
-            MeetingResponseDto.confirmResponse response = meetingService.confirmMeeting(meeting,request);
+            MeetingResponseDto.confirmResponse response = meetingService.confirmMeeting(meeting.get(),request);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -188,13 +189,13 @@ public ResponseEntity<?> GetAllMeetings() {
     @GetMapping("/meeting/{id}/details")
     public ResponseEntity<?> getMeetingDetail(@PathVariable Long id) {
         try {
-            Meeting meeting = meetingService.findMeetingById(id);
+            Optional<Meeting> meeting = meetingService.findMeetingById(id);
 
-            if (meeting == null)
+            if (meeting.isEmpty())
                 return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
-
-            return ResponseEntity.ok(meetingService.getMeetingDetails(meeting));
-
+            else {
+                return ResponseEntity.ok(meetingService.getMeetingDetails(meeting.get()));
+            }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEETING_DETAILS_FAILED, e.getMessage()));
         }

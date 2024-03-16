@@ -1,5 +1,6 @@
 package shop.mozza.app.login.oauth2.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,20 +85,19 @@ public class KakaoController {
 
         String newAccessToken = null;
         // Refresh Token을 사용하여 AccessToken을 갱신
-        String username = jwtUtil.getUsername(refreshToken);
-        if (!StringUtils.isEmpty(refreshToken) && tokenService.validateRefreshToken(username, refreshToken)) {
-            User user = userRepository.findByName(username);
+        Long id = jwtUtil.getId(refreshToken);
+        if (!StringUtils.isEmpty(refreshToken) && tokenService.validateRefreshToken(id, refreshToken)) {
+            User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
             if (user != null) {
                 // 새 액세스 토큰 발급
-                newAccessToken = jwtUtil.createAccessToken(username, user.getRole(), user.getId());
+//                newAccessToken = jwtUtil.createAccessToken(id, user.getRole(), user.getId());
             }
         }
 
 
         // AccessToken이 유효한 경우, 사용자 정보를 SecurityContext에 설정
         if (jwtUtil.validateToken(authorization)) {
-            String role = jwtUtil.getRole(authorization);
-            User user = userRepository.findByName(username);
+            User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
             if (user != null) {
                 UserDto userDto = UserDto.from(user);
                 KakaoOAuth2User kakaoOAuth2User = new KakaoOAuth2User(userDto);

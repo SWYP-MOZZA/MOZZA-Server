@@ -44,4 +44,7 @@ public class KakaoOAuth2User implements OAuth2User {
         return userDto.getName();
     }
 
+
+    public Long getID(){return userDto.getId();}
+
 }

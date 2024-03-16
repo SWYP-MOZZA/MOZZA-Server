@@ -1,5 +1,6 @@
 package shop.mozza.app.login.user.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import shop.mozza.app.login.user.domain.KakaoOAuth2User;
 import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.repository.UserRepository;
 
+import java.util.Optional;
 import java.util.Random;
 
 @RequiredArgsConstructor
@@ -36,30 +38,32 @@ public class UserService {
     public User createUser (KakaoUserInfoResponse userInfo) {
         String username = userInfo.getKakao_account().getProfile().getNickname();
         String userEmail = userInfo.getKakao_account().getEmail();
-        User exitsUser = userRepository.findByName(username);
-        if (exitsUser == null) {
+        Long oauthId = userInfo.getId();
+        Optional<User> exitsUser = userRepository.findByOauthId(oauthId);
+        if (exitsUser.isEmpty()) {
             User newUser = User.builder()
                     .name(username)
                     .isMember(true)
                     .role("USER")
                     .email(userEmail)
+                    .oauthId(oauthId)
                     .build();
 
             userRepository.save(newUser);
             return newUser;
         }
         else {
-            exitsUser.updateUserName(username);
-            exitsUser.updateUserEmail(userEmail);
-            userRepository.save(exitsUser);
-            return exitsUser;
+            exitsUser.get().updateUserName(username);
+            exitsUser.get().updateUserEmail(userEmail);
+            userRepository.save(exitsUser.get());
+            return exitsUser.get();
         }
     }
 
     public OAuth2LoginResponse getLoginReponse(User user) {
 
         String refreshToken = jwtUtil.createRefreshToken(user.getName(), "USER", user.getId());
-        tokenService.saveRefreshToken(user.getName(), refreshToken);
+        tokenService.saveRefreshToken(user.getId(), refreshToken);
 
 
         return OAuth2LoginResponse.builder()
@@ -98,26 +102,22 @@ public class UserService {
                     .build();
 
         }
-        String username;
+        Long userId;
 
 
         if (principal instanceof KakaoOAuth2User) { // Or any other implementation you use
-            username = ((KakaoOAuth2User) principal).getName();
-        } else if (principal instanceof String) {
-            username = (String) principal; // In case the principal is a String
-        } else {
+            userId = ((KakaoOAuth2User) principal).getID();
+        }
+        else {
             throw new IllegalStateException("Unexpected principal type");
         }
 
-        User user = userRepository.findByName(username); // Adjust this line to match your repository method
+        User user = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new); // Adjust this line to match your repository method
 
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with username: " + username);
+            throw new UsernameNotFoundException("User not found with userId: " + userId.toString());
         }
 
-//        if (user.getStatus().equals(UserStatus.INACTIVE)) {
-//            throw new IllegalArgumentException("해당 사용자는 탈퇴한 사용자입니다.");
-//        }
         return user;
     }
 }
