@@ -53,13 +53,18 @@ public class JWTUtil {
         return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().get("role", String.class);
     }
 
+    public Long getId(String token) {
+
+        return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().get("id", Long.class);
+    }
+
     public Boolean isExpired(String token) {
         return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration().before(new Date());
     }
 
 
-    public String createAccessToken(String username, String role) {
-        return createJwt(username, role, accessTokenValidityInSeconds);
+    public String createAccessToken(String username, String role, Long id) {
+        return createJwt(username, role, id, accessTokenValidityInSeconds);
     }
 
 
@@ -69,17 +74,17 @@ public class JWTUtil {
     }
 
 
-    public String createRefreshToken(String username) {
-        return createJwt(username, null, refreshTokenValidityInSeconds);
+    public String createRefreshToken(String username, String role, Long id) {
+        return createJwt(username, role, id, refreshTokenValidityInSeconds);
     }
 
-    public String createJwt(String username, String role, int expiredSeconds) {
-
+    public String createJwt(String username, String role, Long id, int expiredSeconds) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", username);
         if (role != null) {
             claims.put("role", role);
         }
+        claims.put("id", id);
         return "Bearer "+Jwts.builder()
                 .setClaims(claims)
                 .issuedAt(new Date(System.currentTimeMillis()))

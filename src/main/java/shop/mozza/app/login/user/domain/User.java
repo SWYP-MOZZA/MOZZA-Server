@@ -1,4 +1,5 @@
 package shop.mozza.app.login.user.domain;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -34,14 +35,26 @@ public class User extends BaseTimeEntity {
     @Column
     private String email;
 
+    @Column
+    private Long oauthId;
 
+
+    /**
+     *
+     * @param name
+     * @param isMember
+     * @param role
+     * @param password
+     * @param email
+     */
     @Builder
-    public User(String name, Boolean isMember, String role, String password, String email) {
+    public User(String name, Boolean isMember, String role, String password, String email, Long oauthId) {
         this.name = name;
         this.isMember = isMember;
         this.role = role;
         this.password = password;
         this.email = email;
+        this.oauthId = oauthId;
     }
 
     @Builder
@@ -49,6 +62,7 @@ public class User extends BaseTimeEntity {
         this.name = name;
         this.isMember = isMember;
         this.role = role;
+
     }
 
 

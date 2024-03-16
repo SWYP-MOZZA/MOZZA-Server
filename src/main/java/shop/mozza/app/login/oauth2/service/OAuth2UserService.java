@@ -20,6 +20,8 @@ import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.dto.UserDto;
 import shop.mozza.app.login.user.repository.UserRepository;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -41,14 +43,16 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
 
         //리소스 서버에서 발급 받은 정보로 사용자를 특정할 아이디값을 만듬
+        Long userId = Long.parseLong(oAuth2Response.getProviderId());
         String username = oAuth2Response.getName();
 
-        User exitsUser = userRepository.findByName(username);
-        if (exitsUser == null) {
+        Optional<User> exitsUser = userRepository.findById(userId);
+        if (exitsUser.isEmpty()) {
             User newUser = User.builder()
                     .name(username)
                     .isMember(true)
                     .role("USER")
+                    .oauthId(userId)
                     .build();
             userRepository.save(newUser);
             UserDto userDto = UserDto.from(newUser);
@@ -57,9 +61,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
 
         else {
 
-            exitsUser.updateUserName(oAuth2Response.getName());
-            userRepository.save(exitsUser);
-            UserDto userDTO = UserDto.from(exitsUser);
+            exitsUser.get().updateUserName(oAuth2Response.getName());
+            userRepository.save(exitsUser.get());
+            UserDto userDTO = UserDto.from(exitsUser.get());
             return new KakaoOAuth2User(userDTO);
         }
     }

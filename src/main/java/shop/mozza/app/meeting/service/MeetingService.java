@@ -169,12 +169,12 @@ public class MeetingService {
         User.UserBuilder userBuilder = User.builder()
                 .name(req.getName())
                 .isMember(false)
-                .role("GUEST")
-                .password(password);
-
+                .password(password)
+                .role("GUEST");
         User user = userBuilder.build();
         userRepository.save(user);
         return user;
+
     }
 
 
@@ -192,8 +192,8 @@ public class MeetingService {
         meetingRepository.save(meeting);
     }
 
-    public Meeting findMeetingById(Long id) {
-        return meetingRepository.findById(id).orElse(null);
+    public Optional<Meeting> findMeetingById(Long id) {
+        return meetingRepository.findById(id);
     }
 
 

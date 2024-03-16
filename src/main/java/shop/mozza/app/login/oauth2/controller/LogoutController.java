@@ -30,7 +30,7 @@ public class LogoutController {
             User user  = userService.getCurrentUser();
 
             String username = user.getName();
-            tokenService.deleteRefreshToken(username);
+            tokenService.deleteRefreshToken(user.getId());
 
 
             // redis에 access 토큰을 블랙리스트로 추가
