@@ -552,19 +552,37 @@ public class MeetingService {
     }
 
     public MeetingResponseDto.MeetingDetailResponse getMeetingDetails(Meeting meeting) {
+        MeetingResponseDto.MeetingDetailResponse.TimeRange timeRange;
 
-        MeetingResponseDto.MeetingDetailResponse.TimeRange timeRange
-                = makeTimeRange(meeting.getConfirmedStartDateTime(), meeting.getConfirmedEndDateTime());
+        if (meeting.getIsConfirmed() == null || meeting.getIsConfirmed().equals(false)) {
+            timeRange= MeetingResponseDto.MeetingDetailResponse.TimeRange.builder()
+                    .startTime("")
+                    .endTime("")
+                    .build();
 
-        return MeetingResponseDto.MeetingDetailResponse.builder()
-                .id(meeting.getId())
-                .createdAt(meeting.getCreatedAt())
-                .numberOfSubmit(meeting.getNumberOfVoter())
-                .confirmedDate(getDateStringFromLocalDateTime(meeting.getConfirmedStartDateTime()))
-                .confirmedTime(timeRange)
-                .confirmedAttendee(findConfirmedAttendee(meeting))
-                .data(makeDateTimeInfoDto(meeting))
-                .build();
+            return MeetingResponseDto.MeetingDetailResponse.builder()
+                    .id(meeting.getId())
+                    .createdAt(meeting.getCreatedAt())
+                    .numberOfSubmit(meeting.getNumberOfVoter())
+                    .confirmedDate("")
+                    .confirmedTime(timeRange)
+                    .confirmedAttendee(findConfirmedAttendee(meeting))
+                    .data(makeDateTimeInfoDto(meeting))
+                    .build();
+        }
+        else {
+            timeRange = makeTimeRange(meeting.getConfirmedStartDateTime(), meeting.getConfirmedEndDateTime());
+
+            return MeetingResponseDto.MeetingDetailResponse.builder()
+                    .id(meeting.getId())
+                    .createdAt(meeting.getCreatedAt())
+                    .numberOfSubmit(meeting.getNumberOfVoter())
+                    .confirmedDate(getDateStringFromLocalDateTime(meeting.getConfirmedStartDateTime()))
+                    .confirmedTime(timeRange)
+                    .confirmedAttendee(findConfirmedAttendee(meeting))
+                    .data(makeDateTimeInfoDto(meeting))
+                    .build();
+        }
     }
 
     private List<String> findConfirmedAttendee(Meeting meeting) {
@@ -572,7 +590,11 @@ public class MeetingService {
         if (!dateTimeInfos.isEmpty()) {
             DateTimeInfo firstDateTimeInfo = dateTimeInfos.get(0);
             return getUserNamesForDateTimeInfo(firstDateTimeInfo);
-        }else
-            throw new CustomExceptions.Exception("아직 모임이 확정되지 않았습니다.");
+        }
+        else {
+            return new ArrayList<>(); // 비어 있는 리스트 반환
+//            throw new CustomExceptions.Exception("아직 모임이 확정되지 않았습니다.");
+
+        }
     }
 }
