@@ -36,12 +36,13 @@ public class MeetingController extends BaseController {
             User user = userService.getCurrentUser();
             Long meetingId = meetingService.createMeeting(meetingRequest, user);
             String accessToken = jwtTokenPublisher.IssueMeetingToken();
+            String meetingUrl = "www.mozza.com/meeting/" + meetingId + "/short";
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.MAKE_MEETING_SUCCESS);
             response.put("MeetingId",meetingId);
             response.put("AccessToken", accessToken);
-            response.put("URL", "localhost:8080/");  // 일정 등록 url 완성되면 수정
+            response.put("URL",meetingUrl);  // 일정 등록 url 완성되면 수정
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED, e.getMessage() ));

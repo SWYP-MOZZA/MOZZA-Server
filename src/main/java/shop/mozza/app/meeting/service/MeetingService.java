@@ -170,13 +170,12 @@ public class MeetingService {
         User.UserBuilder userBuilder = User.builder()
                 .name(req.getName())
                 .isMember(false)
+                .role("GUEST")
                 .password(password);
 
         User user = userBuilder.build();
         userRepository.save(user);
         return user;
-
-
     }
 
 
