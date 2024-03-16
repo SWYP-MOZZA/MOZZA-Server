@@ -192,10 +192,10 @@ public class MeetingService {
         meetingRepository.save(meeting);
     }
 
-    public Optional<Meeting> findMeetingById(Long id) {
-        return meetingRepository.findById(id);
+    public Meeting findMeetingById(Long id) {
+        return meetingRepository.findById(id)
+                .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException(id+ " 모임이 존재하지 않습니다."));
     }
-
 
     private String findStartDate(List<DateTimeInfo> dateTimeInfos) {
         if (dateTimeInfos.isEmpty()) {

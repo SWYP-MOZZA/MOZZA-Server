@@ -88,11 +88,8 @@ public class MeetingController extends BaseController {
     @GetMapping("/meeting/{id}/short")
     public ResponseEntity<?> getShortMeetingInfo(@PathVariable Long id) {
         try {
-            Optional<Meeting> meeting = meetingService.findMeetingById(id);
-            if (meeting.isEmpty()) {
-                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
-            }
-            MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting.get());
+            Meeting meeting = meetingService.findMeetingById(id);
+            MeetingResponseDto.SummaryResponse summaryResponse = meetingService.createSummaryResponse(meeting);
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
@@ -108,11 +105,8 @@ public class MeetingController extends BaseController {
     @GetMapping("meeting/{id}/choice")
     public ResponseEntity<?> getMeetingOptions(@PathVariable Long id) {
         try {
-            Optional<Meeting> meeting = meetingService.findMeetingById(id);
-            if (meeting.isEmpty()) {
-                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
-            }
-            MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting.get());
+            Meeting meeting = meetingService.findMeetingById(id);
+            MeetingResponseDto.ChoiceResponse choiceResponse = meetingService.createChoiceResponse(meeting);
             Map<String, Object> response = new HashMap<>();
             response.put("StatusCode", 200);
             response.put("ResponseMessage", ResponseMessage.GET_MEEITNG_INFO_SUCCESS);
@@ -170,15 +164,13 @@ public ResponseEntity<?> GetAllMeetings() {
     public ResponseEntity<?> confirmMeetings(@PathVariable Long id, @RequestBody MeetingRequestDto.confirmDateTimeRequest request) {
         try {
             User user = userService.getCurrentUser();
-            Optional<Meeting> meeting = meetingService.findMeetingById(id);
+            Meeting meeting = meetingService.findMeetingById(id);
 
-            if (meeting.isEmpty())
-                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             // 현재 유저가 모임장이 아닐 때 예외 추가
 //            if (!meeting.getCreator().equals(user))
 //                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
 
-            return ResponseEntity.ok(meetingService.confirmMeeting(meeting.get(),request));
+            return ResponseEntity.ok(meetingService.confirmMeeting(meeting,request));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.CONFIRM_MEETING_FAILED, e.getMessage()));
@@ -189,15 +181,13 @@ public ResponseEntity<?> GetAllMeetings() {
     public ResponseEntity<?> confirmMeetings(@PathVariable Long id, @RequestBody MeetingRequestDto.confirmDateRequest request) {
         try {
             User user = userService.getCurrentUser();
-            Optional<Meeting> meeting = meetingService.findMeetingById(id);
+            Meeting meeting = meetingService.findMeetingById(id);
 
-            if (meeting.isEmpty())
-                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
             // 현재 유저가 모임장이 아닐 때 예외 추가
 //            if (!meeting.getCreator().equals(user))
 //                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
 
-            return ResponseEntity.ok(meetingService.confirmDateMeeting(meeting.get(),request));
+            return ResponseEntity.ok(meetingService.confirmDateMeeting(meeting,request));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.CONFIRM_MEETING_FAILED, e.getMessage()));
@@ -207,13 +197,8 @@ public ResponseEntity<?> GetAllMeetings() {
     @GetMapping("/meeting/{id}/details")
     public ResponseEntity<?> getMeetingDetail(@PathVariable Long id) {
         try {
-            Optional<Meeting> meeting = meetingService.findMeetingById(id);
-
-            if (meeting.isEmpty())
-                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.GET_MEEITNG_FAILED));
-            else {
-                return ResponseEntity.ok(meetingService.getMeetingDetails(meeting.get()));
-            }
+            Meeting meeting = meetingService.findMeetingById(id);
+            return ResponseEntity.ok(meetingService.getMeetingDetails(meeting));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEETING_DETAILS_FAILED, e.getMessage()));
         }

@@ -103,6 +103,7 @@ public class SecurityConfig {
                                 .requestMatchers("/meeting/create").permitAll()
                                 .requestMatchers("/meeting/*/short").permitAll()
                                 .requestMatchers("/guest/**").permitAll()
+                                .requestMatchers("/meeting/*/notification").permitAll()
                                 .requestMatchers("/meeting/*/choice").permitAll()
                                 .requestMatchers("/meeting/*/details").permitAll()
                                 .requestMatchers("/meeting/*/confirm").permitAll()
