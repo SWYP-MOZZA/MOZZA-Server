@@ -1,6 +1,7 @@
 package shop.mozza.app.login.user;
 
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,7 +22,7 @@ public class UserController {
         // 예를 들어, userId를 이용하여 데이터베이스에서 사용자 정보를 조회할 수 있습니다.
         // 임시로 사용자 ID를 반환하는 예제 코드를 작성해봅니다.
 
-        User user = userRepository.findById(Long.parseLong(userId));
+        User user = userRepository.findById(Long.parseLong(userId)).orElseThrow(EntityNotFoundException::new);
         // UserResponseDto 객체 생성 및 설정
         UserInfoResponse userResponse = UserInfoResponse
                 .builder()
