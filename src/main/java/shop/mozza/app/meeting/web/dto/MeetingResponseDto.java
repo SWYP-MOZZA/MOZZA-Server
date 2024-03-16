@@ -100,7 +100,35 @@ public class MeetingResponseDto {
     @Getter
     @Setter
     @Builder
-    public static class MeetingDetailResponse {
+    public static class TimeRange {
+        private String startTime;
+        private String endTime;
+
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class DateTimeInfoDto {
+        private String time;
+        private List<String> attendee;
+        private Double ratio;
+
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class DateInfoDto {
+        private List<String> attendee;
+        private Double ratio;
+
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class MeetingConfirmedDateTimeDetailResponse {
         private Long id;
         private LocalDateTime createdAt;
         private Integer numberOfSubmit;
@@ -108,23 +136,51 @@ public class MeetingResponseDto {
         private TimeRange confirmedTime;
         private List<String> confirmedAttendee;
         private Map<String, List<DateTimeInfoDto>> data;
-        @Getter
-        @Setter
-        @Builder
-        public static class TimeRange {
-            private String startTime;
-            private String endTime;
+        private Integer statusCode;
+        private String responseMessage;
 
-        }
-        @Getter
-        @Setter
-        @Builder
-        public static class DateTimeInfoDto {
-            private String time;
-            private List<String> attendee;
-            private Double ratio;
 
-        }
+    }
+    @Getter
+    @Setter
+    @Builder
+    public static class MeetingInProgressDateTimeDetailResponse {
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private Map<String, List<DateTimeInfoDto>> data;
+        private Integer statusCode;
+        private String responseMessage;
+
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class MeetingConfirmedDateDetailResponse {
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private String confirmedDate;
+        private List<String> confirmedAttendee;
+        private Map<String, List<DateInfoDto>> data;
+        private Integer statusCode;
+        private String responseMessage;
+
+
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class MeetingInProgressDateDetailResponse {
+        private Long id;
+        private LocalDateTime createdAt;
+        private Integer numberOfSubmit;
+        private Map<String, List<DateInfoDto>> data;
+        private Integer statusCode;
+        private String responseMessage;
+
     }
 
 }
