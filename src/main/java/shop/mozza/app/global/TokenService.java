@@ -25,31 +25,31 @@ public class TokenService {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    public void saveRefreshToken(String username, String refreshToken) {
+    public void saveRefreshToken(Long id, String refreshToken) {
 
-        log.info("Redis Save : User id " + username);
-        log.info("Redis Save : Refresh toekn  " + refreshToken);
+        log.info("Redis Save : User id " + id);
+        log.info("Redis Save : Refresh token  " + refreshToken);
         refreshToken = refreshToken.replace("Bearer ", "");
         ValueOperations<String, String> values = redisTemplate.opsForValue();
 //        values.set(username, refreshToken, refreshTokenValidityInSeconds, TimeUnit.SECONDS);
-        values.set(username, refreshToken);
+        values.set(id.toString(), refreshToken);
 
     }
 
-    public String findRefreshTokenByUserId(String username) {
+    public String findRefreshTokenByUserId(Long id) {
 
-        log.info("Redis find : User id " + username);
-        return redisTemplate.opsForValue().get(username);
+        log.info("Redis find : User id " + id.toString());
+        return redisTemplate.opsForValue().get(id.toString());
     }
 
-    public void deleteRefreshToken(String username) {
-        log.info("Redis delete : User id " + username);
-        redisTemplate.delete(username);
+    public void deleteRefreshToken(Long id) {
+        log.info("Redis delete : User id " + id);
+        redisTemplate.delete(id.toString());
     }
 
-    public boolean validateRefreshToken(String username, String refreshToken) {
+    public boolean validateRefreshToken(Long id, String refreshToken) {
         // Redis에서 refreshToken으로 저장된 username 조회
-        String redisRefreshToken = redisTemplate.opsForValue().get(username);
+        String redisRefreshToken = redisTemplate.opsForValue().get(id.toString());
         // 저장된 refreshToken과 입력받은 refreshToken이 동일한지 확인
         return refreshToken.equals(redisRefreshToken);
     }

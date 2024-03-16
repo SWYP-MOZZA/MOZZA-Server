@@ -190,8 +190,8 @@ public class MeetingService {
         meetingRepository.save(meeting);
     }
 
-    public Meeting findMeetingById(Long id) {
-        return meetingRepository.findById(id).orElse(null);
+    public Optional<Meeting> findMeetingById(Long id) {
+        return meetingRepository.findById(id);
     }
 
 

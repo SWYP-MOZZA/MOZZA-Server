@@ -44,13 +44,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //OAuth2User
         KakaoOAuth2User customUserDetails = (KakaoOAuth2User) authentication.getPrincipal();
         String username = customUserDetails.getName();
+        Long userId = customUserDetails.getID();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
         log.debug("OAuth : 인증 성공 " + username);
 
-        Long userId = userRepository.findByName(username).getId();
 
 
         // Access Token과 Refresh Token 생성
@@ -58,7 +58,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = jwtUtil.createRefreshToken(username,role, userId);
 
         // Refresh Token을 Redis에 저장
-        tokenService.saveRefreshToken(username, refreshToken);
+        tokenService.saveRefreshToken(userId, refreshToken);
 
         OAuth2LoginResponse loginResponse = new OAuth2LoginResponse();
         loginResponse.setStatusCode(200);
