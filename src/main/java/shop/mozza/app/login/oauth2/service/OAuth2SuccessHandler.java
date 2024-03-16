@@ -54,8 +54,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 
         // Access Token과 Refresh Token 생성
-        String accessToken = jwtUtil.createAccessToken(username, role);
-        String refreshToken = jwtUtil.createRefreshToken(username);
+        String accessToken = jwtUtil.createAccessToken(username, role,userId);
+        String refreshToken = jwtUtil.createRefreshToken(username,role, userId);
 
         // Refresh Token을 Redis에 저장
         tokenService.saveRefreshToken(username, refreshToken);

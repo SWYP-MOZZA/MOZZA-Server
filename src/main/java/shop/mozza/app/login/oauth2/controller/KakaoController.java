@@ -89,7 +89,7 @@ public class KakaoController {
             User user = userRepository.findByName(username);
             if (user != null) {
                 // 새 액세스 토큰 발급
-                newAccessToken = jwtUtil.createAccessToken(username, user.getRole());
+                newAccessToken = jwtUtil.createAccessToken(username, user.getRole(), user.getId());
             }
         }
 

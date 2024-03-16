@@ -196,7 +196,7 @@ public ResponseEntity<?> GetAllMeetings() {
             return ResponseEntity.ok(meetingService.getMeetingDetails(meeting));
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.CONFIRM_MEETING_FAILED, e.getMessage()));
+            return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.GET_MEETING_DETAILS_FAILED, e.getMessage()));
         }
     }
 
