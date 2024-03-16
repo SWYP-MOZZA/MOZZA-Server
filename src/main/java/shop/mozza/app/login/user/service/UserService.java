@@ -58,13 +58,13 @@ public class UserService {
 
     public OAuth2LoginResponse getLoginReponse(User user) {
 
-        String refreshToken = jwtUtil.createRefreshToken(user.getName());
+        String refreshToken = jwtUtil.createRefreshToken(user.getName(), "USER", user.getId());
         tokenService.saveRefreshToken(user.getName(), refreshToken);
 
 
         return OAuth2LoginResponse.builder()
                 .statusCode(200)
-                .accessToken(jwtUtil.createAccessToken(user.getName(), "USER"))
+                .accessToken(jwtUtil.createAccessToken(user.getName(), "USER", user.getId()))
                 .refreshToken(refreshToken)
                 .expiresIn(accessTokenValidityInSeconds)
                 .userId(user.getId())

@@ -1,6 +1,7 @@
 package shop.mozza.app.login.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,7 +72,8 @@ public class JWTFilter extends OncePerRequestFilter {
         if (jwtUtil.validateToken(authorization)) {
             String username = jwtUtil.getUsername(authorization);
             String role = jwtUtil.getRole(authorization);
-            User user = userRepository.findByName(username);
+            Long id = jwtUtil.getId(authorization);
+            User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
             if (user != null) {
                 UserDto userDto = UserDto.from(user);
                 KakaoOAuth2User kakaoOAuth2User = new KakaoOAuth2User(userDto);

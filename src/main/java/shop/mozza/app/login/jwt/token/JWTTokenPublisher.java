@@ -23,7 +23,7 @@ public class JWTTokenPublisher {
     private final JWTUtil jwtUtil;
 
     public String IssueGuestToken(User user) {
-        String guestToken = jwtUtil.createAccessToken(user.getName(), user.getRole());
+        String guestToken = jwtUtil.createAccessToken(user.getName(), user.getRole(), user.getId());
         UserDto userDto = UserDto.from(user);
         GuestUser guestUser = new GuestUser(userDto);
         Authentication authToken = new UsernamePasswordAuthenticationToken(guestUser, null, guestUser.getAuthorities());
