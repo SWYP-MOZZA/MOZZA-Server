@@ -488,8 +488,8 @@ public class MeetingService {
                 .confirmedDate(date)
                 .confirmedStartTime(request.getConfirmedStartTime())
                 .confirmedEndTime(request.getConfirmedEndTime())
-                .statusCode(200)
-                .responseMessage(ResponseMessage.CONFIRM_MEETING_SUCCESS)
+                .StatusCode(200)
+                .ResponseMessage(ResponseMessage.CONFIRM_MEETING_SUCCESS)
                 .build();
 
     }
@@ -508,8 +508,8 @@ public class MeetingService {
                 .numberOfSubmit(meeting.getNumberOfVoter())
                 .confirmedStartDate(request.getConfirmedStartDate())
                 .confirmedEndDate(request.getConfirmedEndDate())
-                .statusCode(200)
-                .responseMessage(ResponseMessage.CONFIRM_MEETING_SUCCESS)
+                .StatusCode(200)
+                .ResponseMessage(ResponseMessage.CONFIRM_MEETING_SUCCESS)
                 .build();
 
 
@@ -632,8 +632,8 @@ public class MeetingService {
                 .confirmedTime(timeRange)
                 .confirmedAttendee(findConfirmedAttendee(meeting))
                 .data(makeDateTimeInfoDto(meeting))
-                .statusCode(200)
-                .responseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .StatusCode(200)
+                .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
                 .build();
     }
 
@@ -644,8 +644,8 @@ public class MeetingService {
                 .createdAt(meeting.getCreatedAt())
                 .numberOfSubmit(meeting.getNumberOfVoter())
                 .data(makeDateTimeInfoDto(meeting))
-                .statusCode(200)
-                .responseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .StatusCode(200)
+                .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
                 .build();
     }
 
@@ -655,8 +655,8 @@ public class MeetingService {
                 .createdAt(meeting.getCreatedAt())
                 .numberOfSubmit(meeting.getNumberOfVoter())
                 .data(makeDateInfoDto(meeting))
-                .statusCode(200)
-                .responseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .StatusCode(200)
+                .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
                 .build();
     }
 
@@ -670,8 +670,8 @@ public class MeetingService {
                 .confirmedDate(getDateStringFromLocalDateTime(meeting.getConfirmedStartDateTime()))
                 .confirmedAttendee(findConfirmedAttendee(meeting))
                 .data(makeDateInfoDto(meeting))
-                .statusCode(200)
-                .responseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .StatusCode(200)
+                .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
                 .build();
     }
 
