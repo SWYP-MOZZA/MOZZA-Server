@@ -25,6 +25,18 @@ public class MeetingResponseDto {
         private String ErrorMessage;
     }
 
+    @Getter
+    @Setter
+    @Builder
+    public static class CreateResponse{
+        private Integer statusCode;
+        private String ResponseMessage;
+        private Long meetingId;
+        private String accessToken;
+        private String URL;
+
+    }
+
 
     @Getter
     @Setter

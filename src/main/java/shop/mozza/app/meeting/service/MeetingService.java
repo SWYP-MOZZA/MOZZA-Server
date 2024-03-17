@@ -100,7 +100,7 @@ public class MeetingService {
         return timeSlots;
     }
 
-    public Long createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
+    public MeetingResponseDto.CreateResponse createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
         Meeting meeting = Meeting
                 .builder()
                 .name(req.getName())
@@ -119,7 +119,13 @@ public class MeetingService {
         } else {
             createDateTimeMeeting(meeting, req);
         }
-        return meeting.getId();
+        return MeetingResponseDto.CreateResponse.builder()
+                .ResponseMessage(ResponseMessage.MAKE_MEETING_SUCCESS)
+                .meetingId(meeting.getId())
+                .accessToken(jwtTokenPublisher.IssueMeetingToken())
+                .URL( "www.mozza.com/meeting/" + meeting.getId()+"/short")
+                .statusCode(200)
+                .build();
     }
 
     private void createDateMeeting(Meeting meeting, List<String> dates) {
