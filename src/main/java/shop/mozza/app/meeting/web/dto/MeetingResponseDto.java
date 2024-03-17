@@ -42,7 +42,7 @@ public class MeetingResponseDto {
 
         @Schema(name = "meetingId" , example = "1")
         private Long meetingId;
-        @Schema(name = "accessToken", example = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE3MTA2MTg0OTYsImV4cCI6MTcxMDYxOTA5Nn0.vqzTLeVNN9YxUK2lS0YFhDu1PMqYzQ1mn5dx_BwRVFrnlTz8T4jPveNw0vad-3FA6C2XQIf3qvsgTCSHL_j2IQ")
+        @Schema(name = "accessToken", example = "${TOKEN}")
         private String accessToken;
 
         @Schema(name = "URL", example = "mozza.com/meeting/1/short")
