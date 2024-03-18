@@ -223,7 +223,7 @@ public class MeetingResponseDto {
         private String confirmedDate;
         private TimeRange confirmedTime;
         private List<String> confirmedAttendee;
-        private Map<String, List<DateTimeInfoDto>> data;
+        private List<Map<String, List<DateTimeInfoDto>>> data;
         @Schema(name = "StatusCode", example = "200")
         private Integer StatusCode;
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
@@ -241,7 +241,7 @@ public class MeetingResponseDto {
         private LocalDateTime createdAt;
         @Schema(name = "numberOfSubmit", example = "2")
         private Integer numberOfSubmit;
-        private Map<String, List<DateTimeInfoDto>> data;
+        private List<Map<String, List<DateTimeInfoDto>>> data;
         @Schema(name = "StatusCode", example = "200")
         private Integer StatusCode;
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
@@ -263,7 +263,7 @@ public class MeetingResponseDto {
         private String confirmedDate;
         @Schema(name = "attendee", type = "array", example = "[\"최유정\",  \"여성찬\"]")
         private List<String> confirmedAttendee;
-        private Map<String, List<DateInfoDto>> data;
+        private List<Map<String, List<DateInfoDto>>> data;
         @Schema(name = "StatusCode", example = "200")
         private Integer StatusCode;
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
@@ -282,7 +282,7 @@ public class MeetingResponseDto {
         private LocalDateTime createdAt;
         @Schema(name = "numberOfSubmit", example = "2")
         private Integer numberOfSubmit;
-        private Map<String, List<DateInfoDto>> data;
+        private List<Map<String, List<DateInfoDto>>> data;
         @Schema(name = "StatusCode", example = "200")
         private Integer StatusCode;
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
