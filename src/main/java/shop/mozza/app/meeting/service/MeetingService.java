@@ -558,11 +558,11 @@ public class MeetingService {
     }
 
     @Transactional
-    public Map<String, List<MeetingResponseDto.DateTimeInfoDto>> makeDateTimeInfoDto(Meeting meeting) {
+    public List<Map<String, List<MeetingResponseDto.DateTimeInfoDto>>> makeDateTimeInfoDto(Meeting meeting) {
 
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
 
-        Map<String, List<MeetingResponseDto.DateTimeInfoDto>> resultMap = new HashMap<>();
+        List<Map<String, List<MeetingResponseDto.DateTimeInfoDto>>> resultList = new ArrayList<>();
 
         for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
             MeetingResponseDto.DateTimeInfoDto dateTimeInfoDto
@@ -572,12 +572,17 @@ public class MeetingService {
                     .ratio(calculateRatioForDateTimeInfo(dateTimeInfo, meeting))
                     .build();
 
-            resultMap.computeIfAbsent(dateTimeInfo.getDatetime().toLocalDate().toString(), k -> new ArrayList<>())
-                    .add(dateTimeInfoDto);
+            Map<String, List<MeetingResponseDto.DateTimeInfoDto>> dateTimeInfoDtoMap = new HashMap<>();
+            List<MeetingResponseDto.DateTimeInfoDto> dateTimeInfoDtoList = new ArrayList<>();
+            dateTimeInfoDtoList.add(dateTimeInfoDto);
+            dateTimeInfoDtoMap.put("dateTimeInfo", dateTimeInfoDtoList);
+
+            resultList.add(dateTimeInfoDtoMap);
         }
 
-        return resultMap;
+        return resultList;
     }
+
 
 
     private List<String> findConfirmedAttendee(Meeting meeting) {
@@ -587,11 +592,10 @@ public class MeetingService {
             return getUserNamesForDateTimeInfo(firstDateTimeInfo);
         } else
             throw new CustomExceptions.Exception("아직 모임이 확정되지 않았습니다.");
-    }
-    private Map<String, List<MeetingResponseDto.DateInfoDto>> makeDateInfoDto(Meeting meeting) {
+    }private List<Map<String, List<MeetingResponseDto.DateInfoDto>>> makeDateInfoDto(Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
 
-        Map<String, List<MeetingResponseDto.DateInfoDto>> resultMap = new HashMap<>();
+        List<Map<String, List<MeetingResponseDto.DateInfoDto>>> resultList = new ArrayList<>();
 
         for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
             String formattedDate = dateTimeInfo.getDatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -601,12 +605,17 @@ public class MeetingService {
                     .ratio(calculateRatioForDateTimeInfo(dateTimeInfo, meeting))
                     .build();
 
-            resultMap.computeIfAbsent(formattedDate, k -> new ArrayList<>())
-                    .add(dateInfoDto);
+            Map<String, List<MeetingResponseDto.DateInfoDto>> dateInfoDtoMap = new HashMap<>();
+            List<MeetingResponseDto.DateInfoDto> dateInfoDtoList = new ArrayList<>();
+            dateInfoDtoList.add(dateInfoDto);
+            dateInfoDtoMap.put(formattedDate, dateInfoDtoList);
+
+            resultList.add(dateInfoDtoMap);
         }
 
-        return resultMap;
+        return resultList;
     }
+
     public Object getMeetingDetails(Meeting meeting) {
         if (meeting.getIsConfirmed() && !meeting.getOnlyDate())
             return getConfirmedDateTimeDetails(meeting);
