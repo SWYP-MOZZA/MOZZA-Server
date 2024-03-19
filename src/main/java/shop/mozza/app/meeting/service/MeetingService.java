@@ -256,12 +256,13 @@ public class MeetingService {
     }
 
     private List<String> findAttendee(List<DateTimeInfo> dateTimeInfos) {
-        List<String> attendees = new ArrayList<>();
+        Set<String> attendees = new HashSet<>();
         for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
             List<String> attendeesForDateTimeInfo = findAttendeesByDateTimeInfo(dateTimeInfo);
             attendees.addAll(attendeesForDateTimeInfo);
         }
-        return attendees;
+        List<String> attendeeNamesList = new ArrayList<>(attendees);
+        return attendeeNamesList;
     }
 
     private List<String> findAttendeesByDateTimeInfo(DateTimeInfo dateTimeInfo) {
