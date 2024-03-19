@@ -105,7 +105,7 @@ public class SecurityConfig {
                                 .requestMatchers("/guest/**").permitAll()
                                 .requestMatchers("/meeting/*/notification").permitAll()
                                 .requestMatchers("/meeting/*/choice").permitAll()
-                                .requestMatchers("/meeting/*/details").permitAll()
+                                .requestMatchers("/meeting/**/details").permitAll()
                                 .requestMatchers("/meeting/*/confirm").permitAll()
                                 .requestMatchers("/meeting/*/date/confirm").permitAll()
                                 .requestMatchers("/meeting/*/submit").permitAll()
