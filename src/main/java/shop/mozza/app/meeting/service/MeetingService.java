@@ -579,8 +579,7 @@ public class MeetingService {
             Map<String, List<MeetingResponseDto.DateTimeInfoDto>> dateTimeInfoDtoMap = new HashMap<>();
             List<MeetingResponseDto.DateTimeInfoDto> dateTimeInfoDtoList = new ArrayList<>();
             dateTimeInfoDtoList.add(dateTimeInfoDto);
-            dateTimeInfoDtoMap.put("dateTimeInfo", dateTimeInfoDtoList);
-
+            dateTimeInfoDtoMap.put(dateTimeInfo.getDatetime().toLocalDate().toString(), dateTimeInfoDtoList);
             resultList.add(dateTimeInfoDtoMap);
         }
 
