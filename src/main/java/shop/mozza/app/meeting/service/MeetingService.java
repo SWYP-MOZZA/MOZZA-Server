@@ -553,11 +553,10 @@ public class MeetingService {
     public Double calculateRatioForDateTimeInfo(DateTimeInfo dateTimeInfo, Meeting meeting) {
         List<String> userNames = getUserNamesForDateTimeInfo(dateTimeInfo);
         Integer numberOfAttendee = userNames.size();
-
-        // Assuming total number of users is available from somewhere
         Integer totalNumberOfUsers = meeting.getNumberOfVoter();
 
-        // Calculate ratio
+        if(numberOfAttendee == 0 || totalNumberOfUsers == 0)
+            return 0.0;
         return (double) numberOfAttendee / totalNumberOfUsers;
     }
 
@@ -595,7 +594,8 @@ public class MeetingService {
             return getUserNamesForDateTimeInfo(firstDateTimeInfo);
         } else
             throw new CustomExceptions.Exception("아직 모임이 확정되지 않았습니다.");
-    }private List<Map<String, List<MeetingResponseDto.DateInfoDto>>> makeDateInfoDto(Meeting meeting) {
+    }
+    private List<Map<String, List<MeetingResponseDto.DateInfoDto>>> makeDateInfoDto(Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
 
         List<Map<String, List<MeetingResponseDto.DateInfoDto>>> resultList = new ArrayList<>();
