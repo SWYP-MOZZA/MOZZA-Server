@@ -229,6 +229,10 @@ public class MeetingResponseDto {
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
         private String ResponseMessage;
 
+        @Schema(name = "CreatorName" , example = "최유정")
+        private String creatorName;
+
+
 
     }
     @Getter
@@ -247,6 +251,8 @@ public class MeetingResponseDto {
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
         private String ResponseMessage;
 
+        @Schema(name = "CreatorName" , example = "최유정")
+        private String creatorName;
     }
 
     @Getter
@@ -268,6 +274,9 @@ public class MeetingResponseDto {
         private Integer StatusCode;
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
         private String ResponseMessage;
+        @Schema(name = "CreatorName" , example = "최유정")
+        private String creatorName;
+
 
 
     }
@@ -287,6 +296,8 @@ public class MeetingResponseDto {
         private Integer StatusCode;
         @Schema(name = "ResponseMessage" , example = shop.mozza.app.exception.ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
         private String ResponseMessage;
+        @Schema(name = "CreatorName" , example = "최유정")
+        private String creatorName;
 
     }
 

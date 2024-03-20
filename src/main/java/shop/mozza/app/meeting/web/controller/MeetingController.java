@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -48,10 +49,10 @@ public class MeetingController extends BaseController {
             @ApiResponse(responseCode = "400", content = {@Content(schema = @Schema())})})
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(schema = @Schema(implementation = MeetingRequestDto.makeMeetingRequest.class, contentMediaType = "application/json"))})
     @PostMapping("/meeting/create")
-    public ResponseEntity<?> createMeeting(@RequestBody MeetingRequestDto.makeMeetingRequest meetingRequest) {
+    public ResponseEntity<?> createMeeting(@RequestBody MeetingRequestDto.makeMeetingRequest meetingRequest, HttpSession session) {
         try {
-            User user = userService.getCurrentUser();
-            MeetingResponseDto.CreateResponse response = meetingService.createMeeting(meetingRequest, user);
+            MeetingResponseDto.CreateResponse response = meetingService.createMeeting(meetingRequest);
+            session.setAttribute("meetingId", response.getMeetingId());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED, e.getMessage()));
@@ -158,7 +159,7 @@ public class MeetingController extends BaseController {
     @PostMapping("/meeting/{id}/date/submit")
     public ResponseEntity<?> submitMeetingDate(@PathVariable("id") @Parameter(name = "id", example = "1")Long id, @RequestBody List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
         try {
-            User user = userService.getCurrentUser();
+            User user = userService.getCurrentUser().orElseThrow();
             meetingService.submitMeetingDate(user, id, dateRequests);
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
         } catch (Exception e) {
@@ -175,7 +176,7 @@ public class MeetingController extends BaseController {
     @PostMapping("/meeting/{id}/submit")
     public ResponseEntity<?> submitMeetingDateTime(@PathVariable("id") @Parameter(name = "id", example = "1")Long id, @RequestBody Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         try {
-            User user = userService.getCurrentUser();
+            User user = userService.getCurrentUser().orElseThrow();
             meetingService.submitMeetingDateTime(user, id, dateTimeRequests);
             return ResponseEntity.ok(new MeetingResponseDto.ResponseDto(200, ResponseMessage.SUBMIT_SCHEDULE_SUCCESS));
         } catch (Exception e) {
@@ -192,7 +193,7 @@ public class MeetingController extends BaseController {
     @GetMapping("/all-meetings")
     public ResponseEntity<?> GetAllMeetings() {
         try {
-            User user = userService.getCurrentUser();
+            User user = userService.getCurrentUser().orElseThrow();
             List<Meeting> meetings = meetingService.findMeetingsByUser(user);
             if (meetings == null || meetings.isEmpty()) {
                 return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(404, ResponseMessage.NO_MEEITNG_LIST_ERROR));
@@ -206,6 +207,7 @@ public class MeetingController extends BaseController {
         }
     }
 
+
     @Operation(summary = "시간과 날짜 확정 API",
             description = "원하는 날짜의 원하는 시간으로 모임 확정한다.",
             tags = {"meeting", "put"})
@@ -215,12 +217,12 @@ public class MeetingController extends BaseController {
     @PutMapping("/meeting/{id}/confirm")
     public ResponseEntity<?> confirmMeetings(@PathVariable("id") @Parameter(name = "id", example = "1")Long id, @RequestBody MeetingRequestDto.confirmDateTimeRequest request) {
         try {
-            User user = userService.getCurrentUser();
+            User user = userService.getCurrentUser().orElseThrow();
             Meeting meeting = meetingService.findMeetingById(id);
 
             // 현재 유저가 모임장이 아닐 때 예외 추가
-//            if (!meeting.getCreator().equals(user))
-//                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
+           if (!meeting.getCreator().equals(user))
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
 
             return ResponseEntity.ok(meetingService.confirmMeeting(meeting, request));
 
@@ -238,12 +240,12 @@ public class MeetingController extends BaseController {
     @PutMapping("/meeting/{id}/date/confirm")
     public ResponseEntity<?> confirmMeetings(@PathVariable("id") @Parameter(name = "id", example = "1")Long id, @RequestBody MeetingRequestDto.confirmDateRequest request) {
         try {
-            User user = userService.getCurrentUser();
+            User user = userService.getCurrentUser().orElseThrow();
             Meeting meeting = meetingService.findMeetingById(id);
 
             // 현재 유저가 모임장이 아닐 때 예외 추가
-//            if (!meeting.getCreator().equals(user))
-//                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
+            if (!meeting.getCreator().equals(user))
+                return ResponseEntity.badRequest().body(new MeetingResponseDto.ResponseDto(403, ResponseMessage.USER_NOT_CREATOR));
 
             return ResponseEntity.ok(meetingService.confirmDateMeeting(meeting, request));
 

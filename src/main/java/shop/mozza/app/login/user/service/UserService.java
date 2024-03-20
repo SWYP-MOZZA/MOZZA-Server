@@ -78,7 +78,7 @@ public class UserService {
     }
 
 
-    public User getCurrentUser() {
+    public Optional<User> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ResponseStatusException(
@@ -90,17 +90,17 @@ public class UserService {
         Object principal = authentication.getPrincipal();
         if (principal.equals("anonymousUser")) {
 
-            Random rand = new Random();
-            // 100000(10^5) 이상 999999(10^6 - 1) 이하의 랜덤 정수 생성
-            int randomNum = rand.nextInt(900000) + 100000;
-
-
-            return User.builder()
-                    .role("anonymousUser")
-                    .isMember(false)
-                    .name("anonymousUser"+ String.valueOf(randomNum))
-                    .build();
-
+//            Random rand = new Random();
+//            // 100000(10^5) 이상 999999(10^6 - 1) 이하의 랜덤 정수 생성
+//            int randomNum = rand.nextInt(900000) + 100000;
+//
+//
+//            return User.builder()
+//                    .role("anonymousUser")
+//                    .isMember(false)
+//                    .name("anonymousUser"+ String.valueOf(randomNum))
+//                    .build();
+            return Optional.empty();
         }
         Long userId;
 
@@ -118,6 +118,6 @@ public class UserService {
             throw new UsernameNotFoundException("User not found with userId: " + userId.toString());
         }
 
-        return user;
+        return Optional.of(user);
     }
 }

@@ -100,14 +100,13 @@ public class MeetingService {
         return timeSlots;
     }
 
-    public MeetingResponseDto.CreateResponse createMeeting(MeetingRequestDto.makeMeetingRequest req, User user) {
+    public MeetingResponseDto.CreateResponse createMeeting(MeetingRequestDto.makeMeetingRequest req) {
         Meeting meeting = Meeting
                 .builder()
                 .name(req.getName())
                 .isDeleted(false)
                 .onlyDate(req.getOnlyDate())
                 .isConfirmed(false)
-                .creator(user)
                 .NumberOfVoter(0)
                 .build();
 
@@ -349,42 +348,46 @@ public class MeetingService {
 
     public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
-        if (optionalMeeting.isPresent()) {
-            Meeting meeting = optionalMeeting.get();
-            meeting.addSubmitCount();
-
-            // 날짜별로 순회
-            for (Map.Entry<String, List<MeetingRequestDto.TimeSlot>> entry : dateTimeRequests.entrySet()) {
-                String date = entry.getKey();
-                List<MeetingRequestDto.TimeSlot> timeSlots = entry.getValue();
-
-                // 시간 슬롯별로 순회
-                for (MeetingRequestDto.TimeSlot timeSlot : timeSlots) {
-                    String time = timeSlot.getTime();
-                    boolean isActive = timeSlot.getIsActive();
-
-                    LocalDateTime dateTime = LocalDateTime.parse(date + "T" + time);
-
-                    // 날짜와 시간이 일치하는 DateTimeInfo 찾기
-                    Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
-                            .stream()
-                            .filter(dateTimeInfo -> dateTimeInfo.getDatetime().equals(dateTime))
-                            .findFirst();
-
-                    if (optionalDateTimeInfo.isPresent() && isActive) {
-                        DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
-
-                        Attendee attendee = Attendee.builder()
-                                .dateTimeInfo(dateTimeInfo)
-                                .user(user)
-                                .build();
-                        attendeeRepository.save(attendee);
-                    }
-                }
-            }
-        } else {
+        if (!optionalMeeting.isPresent()) {
             throw new CustomExceptions.MeetingNotFoundException("모임을 찾을 수 없습니다.");
         }
+        Meeting meeting = optionalMeeting.get();
+//        meeting.addSubmitCount();
+        boolean isNewVote = false;
+
+        // 날짜별로 순회
+        for (Map.Entry<String, List<MeetingRequestDto.TimeSlot>> entry : dateTimeRequests.entrySet()) {
+            String date = entry.getKey();
+            List<MeetingRequestDto.TimeSlot> timeSlots = entry.getValue();
+
+            // 시간 슬롯별로 순회
+            for (MeetingRequestDto.TimeSlot timeSlot : timeSlots) {
+                String time = timeSlot.getTime();
+                boolean isActive = timeSlot.getIsActive();
+
+                LocalDateTime dateTime = LocalDateTime.parse(date + "T" + time);
+
+                // 날짜와 시간이 일치하는 DateTimeInfo 찾기
+                Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
+                        .stream()
+                        .filter(dateTimeInfo -> dateTimeInfo.getDatetime().equals(dateTime))
+                        .findFirst();
+
+                if (optionalDateTimeInfo.isPresent() && isActive) {
+                    DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+                    Attendee attendee = Attendee.builder()
+                            .dateTimeInfo(dateTimeInfo)
+                            .user(user)
+                            .build();
+                    attendeeRepository.save(attendee);
+                }
+            }
+        }
+        // 이름하고 비밀번호를 입력하면 게스트로 등록이되고, id도 발급하고
+
+
+        meeting.addSubmitCount();
+
     }
 
     //User 정보로 모든 meeting을 찾아오는 함수
@@ -636,6 +639,11 @@ public class MeetingService {
         MeetingResponseDto.TimeRange timeRange
                 = makeTimeRange(meeting.getConfirmedStartDateTime(), meeting.getConfirmedEndDateTime());
 
+        String creatorName = ""; // 먼저 변수를 초기화합니다.
+        if (meeting.getCreator() != null) {
+            creatorName = meeting.getCreator().getName();
+        }
+
         return MeetingResponseDto.MeetingConfirmedDateTimeDetailResponse.builder()
                 .id(meeting.getId())
                 .createdAt(meeting.getCreatedAt())
@@ -646,11 +654,15 @@ public class MeetingService {
                 .data(makeDateTimeInfoDto(meeting))
                 .StatusCode(200)
                 .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .creatorName(creatorName)
                 .build();
     }
 
     private MeetingResponseDto.MeetingInProgressDateTimeDetailResponse getInProgressDateTimeDetails(Meeting meeting) {
-
+        String creatorName = ""; // 먼저 변수를 초기화합니다.
+        if (meeting.getCreator() != null) {
+            creatorName = meeting.getCreator().getName();
+        }
         return MeetingResponseDto.MeetingInProgressDateTimeDetailResponse.builder()
                 .id(meeting.getId())
                 .createdAt(meeting.getCreatedAt())
@@ -658,10 +670,15 @@ public class MeetingService {
                 .data(makeDateTimeInfoDto(meeting))
                 .StatusCode(200)
                 .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .creatorName(creatorName)
                 .build();
     }
 
     private MeetingResponseDto.MeetingInProgressDateDetailResponse getInProgressDateDetails(Meeting meeting) {
+        String creatorName = ""; // 먼저 변수를 초기화합니다.
+        if (meeting.getCreator() != null) {
+            creatorName = meeting.getCreator().getName();
+        }
         return MeetingResponseDto.MeetingInProgressDateDetailResponse.builder()
                 .id(meeting.getId())
                 .createdAt(meeting.getCreatedAt())
@@ -669,12 +686,17 @@ public class MeetingService {
                 .data(makeDateInfoDto(meeting))
                 .StatusCode(200)
                 .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .creatorName(creatorName)
                 .build();
     }
 
 
 
     private MeetingResponseDto.MeetingConfirmedDateDetailResponse getConfirmedDateDetails(Meeting meeting) {
+        String creatorName = ""; // 먼저 변수를 초기화합니다.
+        if (meeting.getCreator() != null) {
+            creatorName = meeting.getCreator().getName();
+        }
         return MeetingResponseDto.MeetingConfirmedDateDetailResponse.builder()
                 .id(meeting.getId())
                 .createdAt(meeting.getCreatedAt())
@@ -684,6 +706,7 @@ public class MeetingService {
                 .data(makeDateInfoDto(meeting))
                 .StatusCode(200)
                 .ResponseMessage(ResponseMessage.GET_MEETING_DETAIL_SUCCESS)
+                .creatorName(creatorName)
                 .build();
     }
 

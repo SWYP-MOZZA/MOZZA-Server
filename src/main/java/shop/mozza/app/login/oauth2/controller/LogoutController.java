@@ -27,7 +27,7 @@ public class LogoutController {
         try {
 
             // Redis에서 refresh 토큰을 삭제
-            User user  = userService.getCurrentUser();
+            User user  = userService.getCurrentUser().orElseThrow();
 
             String username = user.getName();
             tokenService.deleteRefreshToken(user.getId());

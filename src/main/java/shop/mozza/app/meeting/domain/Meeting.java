@@ -61,6 +61,9 @@ public class Meeting extends BaseEntity {
     public void updateNotificationSettings(Integer notification){
         this.notification = notification;
     }
+    public void updateCreator(User creator){
+        this.creator = creator;
+    }
 
     public void addSubmitCount(){
         NumberOfVoter ++;
