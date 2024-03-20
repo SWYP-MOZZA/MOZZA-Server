@@ -20,7 +20,7 @@ public class TestGetController {
     public Map<String, String> testGet() {
 
         Map<String, String> response = new HashMap<>();
-        User user  = userService.getCurrentUser();
+        User user  = userService.getCurrentUser().orElseThrow();
 
         response.put("message", user.getName());
         return response;

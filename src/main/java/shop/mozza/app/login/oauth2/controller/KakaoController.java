@@ -1,6 +1,7 @@
 package shop.mozza.app.login.oauth2.controller;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,8 @@ import shop.mozza.app.login.user.domain.User;
 import shop.mozza.app.login.user.dto.UserDto;
 import shop.mozza.app.login.user.repository.UserRepository;
 import shop.mozza.app.login.user.service.UserService;
+import shop.mozza.app.meeting.domain.Meeting;
+import shop.mozza.app.meeting.repository.MeetingRepository;
 
 @Controller
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class KakaoController {
 
     private final UserRepository userRepository;
     private final TokenService tokenService;
+    private final MeetingRepository meetingRepository;
 
     @Value("${jwt.access-token.expire-length}")
     private int accessTokenValidityInSeconds;
@@ -47,7 +51,7 @@ public class KakaoController {
             "사용자 정보를 이용하여 서비스에 회원가입합니다.")
     @GetMapping("/oauth")
     @ResponseBody
-    public ResponseEntity<OAuth2LoginResponse> kakaoOauth(@RequestParam("code") String code) {
+    public ResponseEntity<OAuth2LoginResponse> kakaoOauth(@RequestParam("code") String code, HttpSession session) {
         log.info("인가 코드를 이용하여 토큰을 받습니다.");
         KakaoTokenResponse kakaoTokenResponse = kakaoTokenJsonData.getToken(code);
         log.info("토큰에 대한 정보입니다.{}",kakaoTokenResponse);
@@ -55,6 +59,22 @@ public class KakaoController {
         log.info("회원 정보 입니다.{}",userInfo);
         User user = userService.createUser(userInfo);
         OAuth2LoginResponse response = userService.getLoginReponse(user);
+
+        Long meetingId = (Long) session.getAttribute("meetingId");
+        if (meetingId != null) {
+
+            Meeting meeting = meetingRepository.findMeetingById(meetingId);
+            meeting.updateCreator(user);
+            log.info("세션에서 꺼낸 모임 ID: {}", meetingId);
+            log.info("모임 ID: {} 모임장 :{}", meetingId, user.getName());
+            // 여기서 meetingId와 관련된 추가 로직을 수행할 수 있습니다.
+            // 예: 사용자를 해당 모임의 페이지로 리다이렉트하기
+            meetingRepository.save(meeting);
+        } else {
+            log.info("세션에 모임 ID가 없습니다.");
+            // 세션에 모임 ID가 없는 경우의 처리 로직
+        }
+
         return ResponseEntity.ok(response);
     }
 
