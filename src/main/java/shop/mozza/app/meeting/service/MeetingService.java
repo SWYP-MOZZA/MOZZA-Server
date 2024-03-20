@@ -256,20 +256,24 @@ public class MeetingService {
     }
 
     private List<String> findAttendee(List<DateTimeInfo> dateTimeInfos) {
-        List<String> attendees = new ArrayList<>();
+        Set<Long> attendees = new HashSet<>();
         for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
-            List<String> attendeesForDateTimeInfo = findAttendeesByDateTimeInfo(dateTimeInfo);
+            List<Long> attendeesForDateTimeInfo = findAttendeesByDateTimeInfo(dateTimeInfo);
             attendees.addAll(attendeesForDateTimeInfo);
         }
-        return attendees;
+        List<Long> attendeeIdList = new ArrayList<>(attendees);
+        List<String> attendeeNamesList = new ArrayList<>();
+        for (Long id : attendeeIdList) {
+            attendeeNamesList.add(userRepository.findById(id).get().getName());
+        }
+        return attendeeNamesList;
     }
 
-    private List<String> findAttendeesByDateTimeInfo(DateTimeInfo dateTimeInfo) {
-        List<String> attendeeNames = entityManager.createQuery(
-                        "SELECT a.user.name FROM Attendee a WHERE a.dateTimeInfo = :dateTimeInfo", String.class)
+    private List<Long> findAttendeesByDateTimeInfo(DateTimeInfo dateTimeInfo) {
+        return entityManager.createQuery(
+                        "SELECT a.user.id FROM Attendee a WHERE a.dateTimeInfo = :dateTimeInfo", Long.class)
                 .setParameter("dateTimeInfo", dateTimeInfo)
                 .getResultList();
-        return attendeeNames;
     }
 
 
