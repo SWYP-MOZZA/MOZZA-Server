@@ -51,8 +51,10 @@ public class MeetingController extends BaseController {
     @PostMapping("/meeting/create")
     public ResponseEntity<?> createMeeting(@RequestBody MeetingRequestDto.makeMeetingRequest meetingRequest, HttpSession session) {
         try {
-            MeetingResponseDto.CreateResponse response = meetingService.createMeeting(meetingRequest);
+            Optional<User> user = userService.getCurrentUser();
+            MeetingResponseDto.CreateResponse response = meetingService.createMeeting(meetingRequest, user);
             session.setAttribute("meetingId", response.getMeetingId());
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MeetingResponseDto.ErrorResponseDto(400, ResponseMessage.MAKE_MEETING_FAILED, e.getMessage()));

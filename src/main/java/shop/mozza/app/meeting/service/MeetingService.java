@@ -100,20 +100,22 @@ public class MeetingService {
         return timeSlots;
     }
 
-    public MeetingResponseDto.CreateResponse createMeeting(MeetingRequestDto.makeMeetingRequest req) {
-        Meeting meeting = Meeting
-                .builder()
+    public MeetingResponseDto.CreateResponse createMeeting(MeetingRequestDto.makeMeetingRequest req, Optional<User> user) {
+        // Meeting 객체 빌더를 사용하여 공통 속성 설정
+        Meeting.MeetingBuilder meetingBuilder = Meeting.builder()
                 .name(req.getName())
                 .isDeleted(false)
                 .onlyDate(req.getOnlyDate())
                 .isConfirmed(false)
-                .NumberOfVoter(0)
-                .build();
+                .NumberOfVoter(0);
 
+        // user가 존재하면 creator 설정
+        user.ifPresent(meetingBuilder::creator);
+        Meeting meeting = meetingBuilder.build();
         meetingRepository.save(meeting);
         List<String> dates = req.getDate();
 
-        if (req.getOnlyDate() == true) {
+        if (req.getOnlyDate()) {
             createDateMeeting(meeting, dates);
         } else {
             createDateTimeMeeting(meeting, req);
