@@ -422,7 +422,7 @@ public class MeetingService {
 
     private List<MeetingResponseDto.MeetingInfo> mapToInProgressMeetingInfo(List<Meeting> meetings) {
         return meetings.stream()
-                .filter(meeting -> meeting.getIsConfirmed() == null || !meeting.getIsConfirmed())
+                .filter(meeting -> !meeting.getIsConfirmed())
                 .map(this::mapToMeetingInfo)
                 .collect(Collectors.toList());
     }
@@ -565,31 +565,32 @@ public class MeetingService {
         return (double) numberOfAttendee / totalNumberOfUsers;
     }
 
-    @Transactional
     public List<Map<String, List<MeetingResponseDto.DateTimeInfoDto>>> makeDateTimeInfoDto(Meeting meeting) {
-
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
-
         List<Map<String, List<MeetingResponseDto.DateTimeInfoDto>>> resultList = new ArrayList<>();
 
+        // 날짜별로 모든 시간대 정보를 하나의 맵에 넣기 위한 맵 생성
+        Map<String, List<MeetingResponseDto.DateTimeInfoDto>> dateTimeInfoMap = new LinkedHashMap<>();
+
         for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
-            MeetingResponseDto.DateTimeInfoDto dateTimeInfoDto
-                    = MeetingResponseDto.DateTimeInfoDto.builder()
+            MeetingResponseDto.DateTimeInfoDto dateTimeInfoDto = MeetingResponseDto.DateTimeInfoDto.builder()
                     .time(formatTime(dateTimeInfo.getDatetime()))
                     .attendee(getUserNamesForDateTimeInfo(dateTimeInfo))
                     .ratio(calculateRatioForDateTimeInfo(dateTimeInfo, meeting))
                     .build();
 
-            Map<String, List<MeetingResponseDto.DateTimeInfoDto>> dateTimeInfoDtoMap = new HashMap<>();
-            List<MeetingResponseDto.DateTimeInfoDto> dateTimeInfoDtoList = new ArrayList<>();
+            // 시간대 정보를 날짜별로 그룹화하여 맵에 추가
+            String dateKey = dateTimeInfo.getDatetime().toLocalDate().toString();
+            List<MeetingResponseDto.DateTimeInfoDto> dateTimeInfoDtoList = dateTimeInfoMap.getOrDefault(dateKey, new ArrayList<>());
             dateTimeInfoDtoList.add(dateTimeInfoDto);
-            dateTimeInfoDtoMap.put(dateTimeInfo.getDatetime().toLocalDate().toString(), dateTimeInfoDtoList);
-            resultList.add(dateTimeInfoDtoMap);
+            dateTimeInfoMap.put(dateKey, dateTimeInfoDtoList);
         }
+
+        // 완성된 맵을 결과 리스트에 추가
+        resultList.add(dateTimeInfoMap);
 
         return resultList;
     }
-
 
 
     private List<String> findConfirmedAttendee(Meeting meeting) {
