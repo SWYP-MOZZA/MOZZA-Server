@@ -41,6 +41,8 @@ public class MeetingService {
     private final JWTTokenPublisher jwtTokenPublisher;
     private final AttendeeRepository attendeeRepository;
 
+    private boolean multipleSubmit = false;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -171,6 +173,9 @@ public class MeetingService {
         // 비밀번호가 빈 문자열인 경우 null로 설정
         if (password != null && password.isEmpty()) {
             password = null;
+        }else if (userRepository.findByNameAndPassword(req.getName(),req.getPassword()).isPresent()) {
+            multipleSubmit = true;
+            return userRepository.findByNameAndPassword(req.getName(), req.getPassword()).get();
         }
 
         User.UserBuilder userBuilder = User.builder()
@@ -328,35 +333,27 @@ public class MeetingService {
         return response;
     }
 
-
+    private void updateAttendee(User user, DateTimeInfo dateTimeInfo){
+        Attendee attendee = Attendee
+                .builder()
+                .dateTimeInfo(dateTimeInfo)
+                .user(user)
+                .build();
+        attendeeRepository.save(attendee);
+    }
     public void submitMeetingDate(User user, Long id, List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
             Meeting meeting = optionalMeeting.get();
-            meeting.addSubmitCount();
-
-            for (MeetingRequestDto.DateSubmitRequest dateRequest : dateRequests) {
-                String date = dateRequest.getDate();
-                boolean isActive = dateRequest.getIsActive();
-                Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
-                        .stream()
-                        .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
-                        .findFirst();
-
-                if (optionalDateTimeInfo.isPresent() && isActive) {
-                    DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
-
-                    Attendee attendee = Attendee
-                            .builder()
-                            .dateTimeInfo(dateTimeInfo)
-                            .user(user)
-                            .build();
-                    attendeeRepository.save(attendee);
-                }
+            removeExistingAttendee(user, meeting);
+            processDateRequests(dateRequests, meeting, user);
+            if (!multipleSubmit) {
+                meeting.addSubmitCount();
             }
+        } else {
+            throw new CustomExceptions.MeetingNotFoundException("해당 id의 meeting이 없습니다.");
         }
     }
-
 
     public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
@@ -364,22 +361,48 @@ public class MeetingService {
             throw new CustomExceptions.MeetingNotFoundException("모임을 찾을 수 없습니다.");
         }
         Meeting meeting = optionalMeeting.get();
-//        meeting.addSubmitCount();
-        boolean isNewVote = false;
+        removeExistingAttendee(user, meeting);
+        processDateTimeRequests(dateTimeRequests, meeting, user);
+        if (!multipleSubmit) {
+            meeting.addSubmitCount();
+        }
+    }
 
-        // 날짜별로 순회
+    private void removeExistingAttendee(User user, Meeting meeting) {
+        List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos){
+            List<Attendee> existingAttendees = attendeeRepository.findAttendeesByDateTimeInfoAndAndUser(dateTimeInfo, user);
+            existingAttendees.forEach(attendeeRepository::delete);
+        }
+
+    }
+
+    private void processDateRequests(List<MeetingRequestDto.DateSubmitRequest> dateRequests, Meeting meeting, User user) {
+        for (MeetingRequestDto.DateSubmitRequest dateRequest : dateRequests) {
+            String date = dateRequest.getDate();
+            boolean isActive = dateRequest.getIsActive();
+            Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
+                    .stream()
+                    .filter(dateTimeInfo -> getDateStringFromLocalDateTime(dateTimeInfo.getDatetime()).equals(date))
+                    .findFirst();
+
+            if (optionalDateTimeInfo.isPresent() && isActive) {
+                DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
+                updateAttendee(user, dateTimeInfo);
+            }
+        }
+    }
+
+    private void processDateTimeRequests(Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests, Meeting meeting, User user) {
         for (Map.Entry<String, List<MeetingRequestDto.TimeSlot>> entry : dateTimeRequests.entrySet()) {
             String date = entry.getKey();
             List<MeetingRequestDto.TimeSlot> timeSlots = entry.getValue();
 
-            // 시간 슬롯별로 순회
             for (MeetingRequestDto.TimeSlot timeSlot : timeSlots) {
                 String time = timeSlot.getTime();
                 boolean isActive = timeSlot.getIsActive();
-
                 LocalDateTime dateTime = LocalDateTime.parse(date + "T" + time);
 
-                // 날짜와 시간이 일치하는 DateTimeInfo 찾기
                 Optional<DateTimeInfo> optionalDateTimeInfo = meeting.getDateTimeInfos()
                         .stream()
                         .filter(dateTimeInfo -> dateTimeInfo.getDatetime().equals(dateTime))
@@ -387,19 +410,10 @@ public class MeetingService {
 
                 if (optionalDateTimeInfo.isPresent() && isActive) {
                     DateTimeInfo dateTimeInfo = optionalDateTimeInfo.get();
-                    Attendee attendee = Attendee.builder()
-                            .dateTimeInfo(dateTimeInfo)
-                            .user(user)
-                            .build();
-                    attendeeRepository.save(attendee);
+                    updateAttendee(user, dateTimeInfo);
                 }
             }
         }
-        // 이름하고 비밀번호를 입력하면 게스트로 등록이되고, id도 발급하고
-
-
-        meeting.addSubmitCount();
-
     }
 
     //User 정보로 모든 meeting을 찾아오는 함수
