@@ -183,6 +183,16 @@ public class MeetingService {
         return user;
 
     }
+    public void updateCreator(Long meetingId, User user) {
+        if (meetingId != null) {
+            Meeting meeting = meetingRepository.findMeetingById(meetingId);
+            meeting.updateCreator(user);
+            meetingRepository.save(meeting);
+        } else {
+            log.info("모임 생성자가 아닌 모임 참가자입니다.");
+        }
+    }
+
 
 
     public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
@@ -721,7 +731,6 @@ public class MeetingService {
                 .creatorName(creatorName)
                 .build();
     }
-
 
 
 

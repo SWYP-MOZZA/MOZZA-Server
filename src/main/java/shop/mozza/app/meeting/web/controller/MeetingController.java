@@ -68,11 +68,13 @@ public class MeetingController extends BaseController {
             @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = MeetingResponseDto.ResponseDto.class), mediaType = "application/json")}),
             @ApiResponse(responseCode = "400", content = {@Content(schema = @Schema())})})
     @PostMapping("/guest")
-    public ResponseEntity<?> addGuest(@RequestBody MeetingRequestDto.guestRequest guestRequest) {
+    public ResponseEntity<?> addGuest(@RequestBody MeetingRequestDto.guestRequest guestRequest, HttpSession session) {
         try {
             User user = meetingService.addGuest(guestRequest);
+            Long meetingId = (Long) session.getAttribute("meetingId");
+            meetingService.updateCreator(meetingId, user);
+
             Map<String, Object> response = new HashMap<>();
-            // To DO Jwt 토큰 발급
             String accessToken = jwtTokenPublisher.IssueGuestToken(user);
 
             response.put("StatusCode", 200);
