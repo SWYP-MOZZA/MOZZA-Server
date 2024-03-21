@@ -95,8 +95,8 @@ public class MeetingResponseDto {
     public static class AllMeetingResponseDto {
         @Schema(name = "statusCode", example = "200")
         private Integer StatusCode;
-        private List<MeetingInfo> ConfirmedMeetings;
-        private List<MeetingInfo> InProgress;
+        private List<ConfirmedMeetingInfo> ConfirmedMeetings;
+        private List<InprogressMeetingInfo> InProgress;
         @Schema(name = "responseMessage", example = shop.mozza.app.exception.ResponseMessage.GET_ALL_MEETING_SUCCESS)
         private String ResponseMessage;
 
@@ -106,7 +106,7 @@ public class MeetingResponseDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class MeetingInfo {
+    public static class ConfirmedMeetingInfo {
         @Schema(name = "meetingId", example = "1")
         private Long meetingId;
         @Schema(name = "meetingName", example = "모임1")
@@ -115,6 +115,21 @@ public class MeetingResponseDto {
         private String confirmedDate;
         // @Schema(name= "confirmedTime", type = TimeInfo, example = )
         private TimeInfo confirmedTime;
+        @Schema(name = "submitUserNumber", example = "2")
+        private Integer submitUserNumber;
+        @Schema(name = "createdAt", example = "2024-03-16T11:30:49")
+        private LocalDateTime createdAt;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class InprogressMeetingInfo {
+        @Schema(name = "meetingId", example = "1")
+        private Long meetingId;
+        @Schema(name = "meetingName", example = "모임1")
+        private String meetingName;
         @Schema(name = "submitUserNumber", example = "2")
         private Integer submitUserNumber;
         @Schema(name = "createdAt", example = "2024-03-16T11:30:49")

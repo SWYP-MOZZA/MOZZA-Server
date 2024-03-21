@@ -401,8 +401,8 @@ public class MeetingService {
     // confirmed meeting과 in progress meeting 모두 mapped한 후 가져와서 response를 만들어주는 함수
     public MeetingResponseDto.AllMeetingResponseDto findAllmeetings(User user) {
         List<Meeting> meetings = findMeetingsByUser(user);
-        List<MeetingResponseDto.MeetingInfo> confirmedMeetings = mapToConfirmedMeetingInfo(meetings);
-        List<MeetingResponseDto.MeetingInfo> inProgress = mapToInProgressMeetingInfo(meetings);
+        List<MeetingResponseDto.ConfirmedMeetingInfo> confirmedMeetings = mapToConfirmedMeetingInfo(meetings);
+        List<MeetingResponseDto.InprogressMeetingInfo> inProgress = mapToInProgressMeetingInfo(meetings);
 
         return MeetingResponseDto.AllMeetingResponseDto.builder()
                 .StatusCode(200)
@@ -413,30 +413,30 @@ public class MeetingService {
 
     }
 
-    private List<MeetingResponseDto.MeetingInfo> mapToConfirmedMeetingInfo(List<Meeting> meetings) {
+    private List<MeetingResponseDto.ConfirmedMeetingInfo> mapToConfirmedMeetingInfo(List<Meeting> meetings) {
         return meetings.stream()
                 .filter(meeting -> meeting.getIsConfirmed() != null && meeting.getIsConfirmed())
                 .map(this::mapToMeetingInfo)
                 .collect(Collectors.toList());
     }
 
-    private List<MeetingResponseDto.MeetingInfo> mapToInProgressMeetingInfo(List<Meeting> meetings) {
+    private List<MeetingResponseDto.InprogressMeetingInfo> mapToInProgressMeetingInfo(List<Meeting> meetings) {
         return meetings.stream()
                 .filter(meeting -> !meeting.getIsConfirmed())
-                .map(this::mapToMeetingInfo)
+                .map(this::mapToInProgressMeetingInfo)
                 .collect(Collectors.toList());
     }
 
     public static String getTimeAsString(LocalDateTime dateTime) {
         if (dateTime == null) {
-            return null;
+            throw new CustomExceptions.Exception("연결된 localDateTime이 없습니다.");
         }
         return dateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
     // Meeting을 MeetingInfoDTO로 mapping하는 함수
-    private MeetingResponseDto.MeetingInfo mapToMeetingInfo(Meeting meeting) {
-        return MeetingResponseDto.MeetingInfo.builder()
+    private MeetingResponseDto.ConfirmedMeetingInfo mapToMeetingInfo(Meeting meeting) {
+        return MeetingResponseDto.ConfirmedMeetingInfo.builder()
                 .meetingId(meeting.getId())
                 .meetingName(meeting.getName())
                 .confirmedDate(getDateStringFromLocalDateTime(meeting.getConfirmedStartDateTime()))
@@ -444,6 +444,15 @@ public class MeetingService {
                         .startTime(getTimeAsString(meeting.getConfirmedStartDateTime()))
                         .endTime(getTimeAsString(meeting.getConfirmedEndDateTime()))
                         .build())
+                .submitUserNumber(meeting.getNumberOfVoter())
+                .createdAt(meeting.getCreatedAt())
+                .build();
+    }
+
+    private MeetingResponseDto.InprogressMeetingInfo mapToInProgressMeetingInfo(Meeting meeting) {
+        return MeetingResponseDto.InprogressMeetingInfo.builder()
+                .meetingId(meeting.getId())
+                .meetingName(meeting.getName())
                 .submitUserNumber(meeting.getNumberOfVoter())
                 .createdAt(meeting.getCreatedAt())
                 .build();
