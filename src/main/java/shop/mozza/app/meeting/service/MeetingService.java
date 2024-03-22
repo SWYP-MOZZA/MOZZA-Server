@@ -40,9 +40,6 @@ public class MeetingService {
     private final UserRepository userRepository;
     private final JWTTokenPublisher jwtTokenPublisher;
     private final AttendeeRepository attendeeRepository;
-
-    private boolean multipleSubmit = false;
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -126,7 +123,7 @@ public class MeetingService {
                 .ResponseMessage(ResponseMessage.MAKE_MEETING_SUCCESS)
                 .meetingId(meeting.getId())
                 .accessToken(jwtTokenPublisher.IssueMeetingToken())
-                .URL( "www.mozza.com/meeting/" + meeting.getId()+"/short")
+                .URL("www.mozza.com/meeting/" + meeting.getId() + "/short")
                 .statusCode(200)
                 .build();
     }
@@ -168,14 +165,14 @@ public class MeetingService {
     }
 
     public User addGuest(MeetingRequestDto.guestRequest req) {
+        if (userRepository.findByNameAndPassword(req.getName(), req.getPassword()).isPresent()) {
+            return userRepository.findByNameAndPassword(req.getName(), req.getPassword()).get();
+        }
         String password = req.getPassword();
 
         // 비밀번호가 빈 문자열인 경우 null로 설정
         if (password != null && password.isEmpty()) {
             password = null;
-        }else if (userRepository.findByNameAndPassword(req.getName(),req.getPassword()).isPresent()) {
-            multipleSubmit = true;
-            return userRepository.findByNameAndPassword(req.getName(), req.getPassword()).get();
         }
 
         User.UserBuilder userBuilder = User.builder()
@@ -188,6 +185,7 @@ public class MeetingService {
         return user;
 
     }
+
     public void updateCreator(Long meetingId, User user) {
         if (meetingId != null) {
             Meeting meeting = meetingRepository.findMeetingById(meetingId);
@@ -197,7 +195,6 @@ public class MeetingService {
             log.info("모임 생성자가 아닌 모임 참가자입니다.");
         }
     }
-
 
 
     public void setNotification(MeetingRequestDto.notificationRequest req, Long id) {
@@ -216,7 +213,7 @@ public class MeetingService {
 
     public Meeting findMeetingById(Long id) {
         return meetingRepository.findById(id)
-                .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException(id+ " 모임이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomExceptions.MeetingNotFoundException(id + " 모임이 존재하지 않습니다."));
     }
 
     private String findStartDate(List<DateTimeInfo> dateTimeInfos) {
@@ -333,7 +330,11 @@ public class MeetingService {
         return response;
     }
 
-    private void updateAttendee(User user, DateTimeInfo dateTimeInfo){
+
+    // ---------------------choice 끝, submit 시작 ---------------------------
+
+
+    private void updateAttendee(User user, DateTimeInfo dateTimeInfo) {
         Attendee attendee = Attendee
                 .builder()
                 .dateTimeInfo(dateTimeInfo)
@@ -341,15 +342,14 @@ public class MeetingService {
                 .build();
         attendeeRepository.save(attendee);
     }
+
     public void submitMeetingDate(User user, Long id, List<MeetingRequestDto.DateSubmitRequest> dateRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
         if (optionalMeeting.isPresent()) {
             Meeting meeting = optionalMeeting.get();
             removeExistingAttendee(user, meeting);
             processDateRequests(dateRequests, meeting, user);
-            if (!multipleSubmit) {
-                meeting.addSubmitCount();
-            }
+            meeting.addSubmitCount();
         } else {
             throw new CustomExceptions.MeetingNotFoundException("해당 id의 meeting이 없습니다.");
         }
@@ -357,20 +357,19 @@ public class MeetingService {
 
     public void submitMeetingDateTime(User user, Long id, Map<String, List<MeetingRequestDto.TimeSlot>> dateTimeRequests) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(id);
-        if (!optionalMeeting.isPresent()) {
-            throw new CustomExceptions.MeetingNotFoundException("모임을 찾을 수 없습니다.");
-        }
-        Meeting meeting = optionalMeeting.get();
-        removeExistingAttendee(user, meeting);
-        processDateTimeRequests(dateTimeRequests, meeting, user);
-        if (!multipleSubmit) {
+        if (optionalMeeting.isPresent()) {
+            Meeting meeting = optionalMeeting.get();
+            removeExistingAttendee(user, meeting);
+            processDateTimeRequests(dateTimeRequests, meeting, user);
             meeting.addSubmitCount();
+        } else {
+            throw new CustomExceptions.MeetingNotFoundException("해당 id의 meeting이 없습니다.");
         }
     }
 
     private void removeExistingAttendee(User user, Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
-        for (DateTimeInfo dateTimeInfo : dateTimeInfos){
+        for (DateTimeInfo dateTimeInfo : dateTimeInfos) {
             List<Attendee> existingAttendees = attendeeRepository.findAttendeesByDateTimeInfoAndAndUser(dateTimeInfo, user);
             existingAttendees.forEach(attendeeRepository::delete);
         }
@@ -555,7 +554,6 @@ public class MeetingService {
                 .build();
 
 
-
     }
 
     // ------------------confirm meeting 끝, get meeting details 시작 ------------------------
@@ -593,7 +591,7 @@ public class MeetingService {
         Integer numberOfAttendee = userNames.size();
         Integer totalNumberOfUsers = meeting.getNumberOfVoter();
 
-        if(numberOfAttendee == 0 || totalNumberOfUsers == 0)
+        if (numberOfAttendee == 0 || totalNumberOfUsers == 0)
             return 0.0;
         return (double) numberOfAttendee / totalNumberOfUsers;
     }
@@ -634,6 +632,7 @@ public class MeetingService {
         } else
             throw new CustomExceptions.Exception("아직 모임이 확정되지 않았습니다.");
     }
+
     private List<Map<String, List<MeetingResponseDto.DateInfoDto>>> makeDateInfoDto(Meeting meeting) {
         List<DateTimeInfo> dateTimeInfos = dateTimeInfoRepository.findByMeeting(meeting);
 
@@ -670,6 +669,7 @@ public class MeetingService {
         else
             throw new CustomExceptions.MeetingNotFoundException("모임이 없습니다.");
     }
+
     public MeetingResponseDto.MeetingConfirmedDateTimeDetailResponse getConfirmedDateTimeDetails(Meeting meeting) {
 
         MeetingResponseDto.TimeRange timeRange
@@ -727,7 +727,6 @@ public class MeetingService {
     }
 
 
-
     private MeetingResponseDto.MeetingConfirmedDateDetailResponse getConfirmedDateDetails(Meeting meeting) {
         String creatorName = ""; // 먼저 변수를 초기화합니다.
         if (meeting.getCreator() != null) {
@@ -745,8 +744,6 @@ public class MeetingService {
                 .creatorName(creatorName)
                 .build();
     }
-
-
 
 
 // ------------------get meeting details 끝 ------------------------
