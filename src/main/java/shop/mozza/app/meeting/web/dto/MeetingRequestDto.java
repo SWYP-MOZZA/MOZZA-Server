@@ -59,7 +59,7 @@ public class MeetingRequestDto {
     public static class TimeSlot {
         @Schema(name = "time", example = "13:00")
         private String time;
-        @Schema(name = "time", example = "isActive")
+        @Schema(name = "isActive", example = "true")
         private Boolean isActive;
     }
 
