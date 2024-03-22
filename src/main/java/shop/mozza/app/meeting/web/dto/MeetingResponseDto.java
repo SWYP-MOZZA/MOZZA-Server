@@ -209,7 +209,7 @@ public class MeetingResponseDto {
         private String time;
         @Schema(name = "attendee", type = "array", example = "[\"최유정\",  \"여성찬\"]")
         private List<String> attendee;
-        @Schema(name = "ratio", example = "1")
+        @Schema(name = "ratio", example = "1.0")
         private Double ratio;
 
     }
@@ -220,7 +220,7 @@ public class MeetingResponseDto {
     public static class DateInfoDto {
         @Schema(name = "attendee", type = "array", example = "[\"최유정\",  \"여성찬\"]")
         private List<String> attendee;
-        @Schema(name = "ratio", example = "1")
+        @Schema(name = "ratio", example = "1.0")
         private Double ratio;
 
     }
