@@ -20,6 +20,7 @@ import shop.mozza.app.login.user.repository.UserRepository;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 
 @Configuration
@@ -61,9 +62,12 @@ public class SecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
                         CorsConfiguration configuration = new CorsConfiguration();
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 정확한 출처 명시
-                        configuration.setAllowedOrigins(Collections.singletonList("http://mozza-client.vercel.app:3000")); // 정확한 출처 명시
-                        configuration.setAllowedOrigins(Collections.singletonList("http://mozza-client.vercel.app:8080")); // 정확한 출처 명시
+                        List<String> allowedOrigins = Arrays.asList(
+                                "http://localhost:3000",
+                                "http://mozza-client.vercel.app:3000",
+                                "http://mozza-client.vercel.app:8080"
+                        );
+                        configuration.setAllowedOrigins(allowedOrigins);
                         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 필요한 메소드만 명시하거나 모두 허용
                         configuration.setAllowCredentials(true); // 크로스-도메인 쿠키 허용
                         configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
